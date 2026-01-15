@@ -81,6 +81,7 @@ export const boardAPI = {
   create: (data) => api.post('/boards', data),
   update: (id, data) => api.put(`/boards/${id}`, data),
   delete: (id) => api.delete(`/boards/${id}`),
+  sendInvite: (boardId, userId) => api.post(`/boards/${boardId}/invite`, { userId }),
 };
 
 // Task API
@@ -130,9 +131,9 @@ export const taskAPI = {
   delete: (id) => api.delete(`/tasks/${id}`),
 };
 
-// Team API (Deprecated - kept for backward compatibility)
-// Use Workspace API instead
+// Team API
 export const teamAPI = {
+  getMyMembers: () => api.get('/teams/members'), // Get team members for current user (from Team table with inviting_id)
   create: (data) => api.post('/teams', data),
   getByBoard: (boardId) => api.get(`/teams/board/${boardId}`),
   addMember: (teamId, userId) => api.post(`/teams/${teamId}/add`, { userId }),
@@ -146,6 +147,7 @@ export const userAPI = {
   create: (data) => api.post('/users', data),
   update: (id, data) => api.put(`/users/${id}`, data),
   delete: (id) => api.delete(`/users/${id}`),
+  sendInvite: (data) => api.post('/users/invite', data),
 };
 
 export default api;
