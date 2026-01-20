@@ -56,7 +56,7 @@ const UserDashboard = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">My Projects </h1>
-            <p className="mt-2 text-gray-600">Select a project to view its boards</p>
+            <p className="mt-2 text-gray-600">Open a project to view its boards</p>
           </div>
           <button
             onClick={() => setShowModal(true)}

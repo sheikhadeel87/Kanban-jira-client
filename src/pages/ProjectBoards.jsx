@@ -16,76 +16,106 @@ const BoardColumn = ({ board, boardTasks, children, isProjectMember, isProjectAd
     id: board._id,
   });
 
+  // Generate a unique gradient color for each board based on its ID
+  const getBoardGradient = (boardId) => {
+    const gradients = [
+      'bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800',
+      'bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800',
+      'bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-800',
+      'bg-gradient-to-br from-pink-600 via-pink-700 to-pink-800',
+      'bg-gradient-to-br from-teal-600 via-teal-700 to-teal-800',
+      'bg-gradient-to-br from-orange-600 via-orange-700 to-orange-800',
+      'bg-gradient-to-br from-cyan-600 via-cyan-700 to-cyan-800',
+      'bg-gradient-to-br from-rose-600 via-rose-700 to-rose-800',
+    ];
+    if (!boardId) return gradients[0];
+    const index = parseInt(String(boardId).slice(-1), 16) % gradients.length;
+    return gradients[index] || gradients[0];
+  };
+
   return (
     <div
       ref={setNodeRef}
       key={board._id}
       className="flex-shrink-0 w-80 flex flex-col"
       style={{
-        backgroundColor: isOver ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-        border: isOver ? '2px dashed rgba(59, 130, 246, 0.5)' : '2px solid transparent',
-        borderRadius: '8px',
-        transition: 'all 0.2s ease',
-        transform: isOver ? 'scale(1.02)' : 'scale(1)',
+        backgroundColor: isOver ? 'rgba(139, 92, 246, 0.08)' : 'transparent',
+        borderRadius: '16px',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
-      {/* Board Header */}
-      <div className="bg-primary-600 text-white rounded-t-lg p-4 mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-bold">{board.title}</h2>
-          {(isProjectAdmin || (board.owner?._id || board.owner) === (user?._id || user?.id) || user?.role === 'admin' || user?.role === 'owner') && (
-            <div className="flex space-x-1">
-              <button
-                onClick={() => onEditBoard(board)}
-                className="p-1.5 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-white transition-colors"
-                title="Edit Board"
-              >
-                <Edit className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => onDeleteBoard(board._id)}
-                className="p-1.5 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-white transition-colors"
-                title="Delete Board"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          )}
+      {/* Board Header - Modern Gradient Design */}
+      <div className={`${getBoardGradient(board._id)} text-white rounded-t-2xl p-5 mb-4 shadow-xl relative overflow-hidden`}>
+        {/* Decorative background pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -mr-16 -mt-16"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full -ml-12 -mb-12"></div>
         </div>
-        <p className="text-sm text-primary-100 mb-2">
-          {board.description || 'No description'}
-        </p>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-primary-200">{boardTasks.length} {boardTasks.length === 1 ? 'task' : 'tasks'}</span>
-          {isProjectMember && (
-            <button
-              onClick={() => onCreateTask(board._id)}
-              className="bg-white text-primary-600 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-primary-50 transition-colors flex items-center space-x-1"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Task</span>
-            </button>
+        
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xl font-bold tracking-tight drop-shadow-sm">{board.title}</h2>
+            {(isProjectAdmin || (board.owner?._id || board.owner) === (user?._id || user?.id) || user?.role === 'admin' || user?.role === 'owner') && (
+              <div className="flex space-x-1.5">
+                <button
+                  onClick={() => onEditBoard(board)}
+                  className="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg text-white transition-all backdrop-blur-sm shadow-sm hover:shadow-md"
+                  title="Edit Board"
+                >
+                  <Edit className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => onDeleteBoard(board._id)}
+                  className="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg text-white transition-all backdrop-blur-sm shadow-sm hover:shadow-md"
+                  title="Delete Board"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </div>
+          {board.description && (
+            <p className="text-sm text-white text-opacity-90 mb-3 line-clamp-2 leading-relaxed">{board.description}</p>
           )}
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-white text-opacity-90 bg-white bg-opacity-20 px-3 py-1.5 rounded-full backdrop-blur-sm">
+              {boardTasks.length} {boardTasks.length === 1 ? 'task' : 'tasks'}
+            </span>
+            {isProjectMember && (
+              <button
+                onClick={() => onCreateTask(board._id)}
+                className="bg-white text-purple-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-opacity-95 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Task</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Tasks Column */}
-      <div className="bg-gray-50 rounded-b-lg p-4 min-h-[500px] space-y-3 flex-1 border-2 border-gray-200">
+      {/* Tasks Column - Clean Modern Design */}
+      <div className="bg-gradient-to-b from-gray-50 to-gray-100 rounded-b-2xl p-4 min-h-[600px] space-y-3 flex-1 border border-gray-200 shadow-inner">
         {children}
         {boardTasks.length === 0 && (
-          <div className="text-center text-gray-400 py-12 border-2 border-dashed border-gray-300 rounded-lg">
-            <p className="text-sm font-medium mb-2">No tasks</p>
-            {isProjectMember ? (
-              <button
-                onClick={() => onCreateTask(board._id)}
-                className="mt-2 bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center space-x-2 mx-auto"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Create Task</span>
-              </button>
-            ) : (
-              <p className="text-xs">Drop tasks here</p>
-            )}
+          <div className="text-center text-gray-400 py-16 border-2 border-dashed border-gray-300 rounded-xl bg-white">
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                <FolderKanban className="h-8 w-8 text-gray-400" />
+              </div>
+              <p className="text-sm font-medium mb-2 text-gray-500">No tasks yet</p>
+              {isProjectMember ? (
+                <button
+                  onClick={() => onCreateTask(board._id)}
+                  className="mt-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:from-purple-700 hover:to-purple-800 transition-all shadow-md hover:shadow-lg transform hover:scale-105 flex items-center space-x-2 mx-auto"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Create First Task</span>
+                </button>
+              ) : (
+                <p className="text-xs text-gray-400 mt-2">Drop tasks here</p>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -496,7 +526,7 @@ const ProjectBoards = () => {
               console.log('Drag started:', event.active.id);
             }}
           >
-            <div className="flex gap-6 overflow-x-auto pb-4">
+            <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {boards.map((board) => {
                 const boardTasks = tasks.filter((task) => {
                   // Normalize task board ID (can be object with _id or just ID string)
