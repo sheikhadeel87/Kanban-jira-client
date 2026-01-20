@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { taskAPI, boardAPI, workspaceAPI } from '../services/api';
+import { taskAPI, boardAPI, projectAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { X, User, XCircle, Settings, Paperclip, File } from 'lucide-react';
 
@@ -15,26 +15,26 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [currentAttachment, setCurrentAttachment] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [workspaceMembers, setWorkspaceMembers] = useState([]);
+  const [projectMembers, setProjectMembers] = useState([]);
   const [board, setBoard] = useState(null);
-  const [workspaceId, setWorkspaceId] = useState(null);
+  const [projectId, setProjectId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get board to find workspace
+        // Get board to find project
         const boardRes = await boardAPI.getById(boardId);
         setBoard(boardRes.data);
 
-        // Get workspace members
-        if (boardRes.data.workspace) {
-          const wsId = boardRes.data.workspace._id || boardRes.data.workspace;
-          setWorkspaceId(wsId);
-          const workspaceRes = await workspaceAPI.getById(wsId);
-          setWorkspaceMembers(workspaceRes.data.members || []);
+        // Get project members
+        if (boardRes.data.project) {
+          const projId = boardRes.data.project._id || boardRes.data.project;
+          setProjectId(projId);
+          const projectRes = await projectAPI.getById(projId);
+          setProjectMembers(projectRes.data.members || []);
         }
       } catch (err) {
-        console.error('Failed to load workspace data:', err);
+        console.error('Failed to load project data:', err);
       }
     };
 
@@ -135,7 +135,7 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
 
   const getAssignedUserNames = () => {
     return formData.assignedTo.map((userId) => {
-      const member = workspaceMembers.find((m) => (m.user._id || m.user) === userId);
+      const member = projectMembers.find((m) => (m.user._id || m.user) === userId);
       return member?.user?.name || 'Unknown';
     });
   };
@@ -172,7 +172,8 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
           </div>
-          <div>
+          {/* status in add task modal */}
+          {/* <div>
             <label className="label">Status</label>
             <select
               className="input-field"
@@ -183,7 +184,7 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
               <option value="in_progress">In Progress</option>
               <option value="completed">Completed</option>
             </select>
-          </div>
+          </div> */}
 
           {/*UploadFile section here*/}
           <div>
@@ -263,7 +264,7 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
           <div>
           <label className="label">Assign to Team Members</label>
           <p className="text-xs text-gray-500 mb-3">
-            Select workspace members to assign to this task. You can assign multiple people.
+            Select project members to assign to this task. You can assign multiple people.
           </p>
 
           {formData.assignedTo.length > 0 && (
@@ -272,7 +273,7 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
               <div className="flex flex-wrap gap-2">
                 {getAssignedUserNames().map((name, index) => {
                   const userId = formData.assignedTo[index];
-                  const member = workspaceMembers.find((m) => (m.user._id || m.user) === userId);
+                  const member = projectMembers.find((m) => (m.user._id || m.user) === userId);
                   const user = member?.user;
                   return (
                     <span
@@ -313,8 +314,8 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                 }
               }}
             >
-              <option value="">Select a workspace member...</option>
-              {workspaceMembers
+              <option value="">Select a project member...</option>
+              {projectMembers
                 .filter((m) => !formData.assignedTo.includes(m.user._id || m.user))
                 .map((member) => {
                   const user = member.user;
@@ -325,7 +326,7 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                   );
                 })}
             </select>
-            {workspaceMembers.length === 0 && (
+            {projectMembers.length === 0 && (
               <div className="mt-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
@@ -335,31 +336,31 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-yellow-800 mb-1">
-                      No workspace members available
+                      No project members available
                     </p>
                     <p className="text-xs text-yellow-700 mb-3">
-                      You need to add members to the workspace before you can assign tasks to them.
+                      You need to add members to the project before you can assign tasks to them.
                     </p>
-                    {workspaceId && (
+                    {projectId && (
                       <button
                         type="button"
                         onClick={() => {
                           onClose();
-                          navigate(`/workspace/${workspaceId}/settings`);
+                          navigate(`/project/${projectId}/settings`);
                         }}
                         className="inline-flex items-center space-x-2 px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-medium rounded-lg transition-colors"
                       >
                         <Settings className="h-3 w-3" />
-                        <span>Go to Workspace Settings</span>
+                        <span>Go to Project Settings</span>
                       </button>
                     )}
                   </div>
                 </div>
               </div>
             )}
-            {workspaceMembers.length > 0 && formData.assignedTo.length === 0 && (
+            {projectMembers.length > 0 && formData.assignedTo.length === 0 && (
               <p className="text-xs text-gray-500 mt-2">
-                💡 Tip: Select workspace members to assign this task. You can assign multiple people.
+                💡 Tip: Select project members to assign this task. You can assign multiple people.
               </p>
             )}
           </div>

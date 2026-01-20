@@ -12,6 +12,7 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    organizationName: '',
   });
   const [loading, setLoading] = useState(false);
   const [inviteToken, setInviteToken] = useState(null);
@@ -55,18 +56,12 @@ const Register = () => {
 
     setLoading(true);
     
-    // First, accept the invitation if there's a token
-    if (inviteToken) {
-      try {
-        await api.get(`/users/accept-invitation?token=${inviteToken}`);
-        toast.success('Invitation accepted!');
-      } catch (err) {
-        console.error('Error accepting invitation:', err);
-        // Continue with registration even if acceptance fails
-      }
-    }
+    // Pass invitationToken if available, otherwise use organizationName or auto-create
+    const organizationName = inviteToken 
+      ? null 
+      : (formData.organizationName || (formData.name ? `${formData.name}'s Organization` : 'My Organization'));
     
-    const result = await register(formData.name, formData.email, formData.password);
+    const result = await register(formData.name, formData.email, formData.password, inviteToken, organizationName);
     setLoading(false);
     if (result.success) {
       const user = JSON.parse(localStorage.getItem('user'));
@@ -168,6 +163,25 @@ const Register = () => {
                   onChange={handleChange}
                 />
               </div>
+              {!inviteToken && (
+                <div>
+                  <label htmlFor="organizationName" className="label">
+                    Organization Name
+                  </label>
+                  <input
+                    id="organizationName"
+                    name="organizationName"
+                    type="text"
+                    className="input-field"
+                    placeholder="Enter organization name (optional)"
+                    value={formData.organizationName}
+                    onChange={handleChange}
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Leave empty to use "{formData.name || 'Your'}'s Organization"
+                  </p>
+                </div>
+              )}
             </div>
 
             <div>

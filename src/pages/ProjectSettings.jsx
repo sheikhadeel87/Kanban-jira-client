@@ -1,49 +1,44 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { workspaceAPI, teamAPI } from '../services/api';
+import { projectAPI, organizationAPI, teamAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Users, UserPlus, UserMinus, Crown, Shield, Search, Edit, Trash2 } from 'lucide-react';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 
-const WorkspaceSettings = () => {
-  const { workspaceId } = useParams();
+const ProjectSettings = () => {
+  const { projectId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [workspace, setWorkspace] = useState(null);
+  const [project, setProject] = useState(null);
   const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddMember, setShowAddMember] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isEditingWorkspace, setIsEditingWorkspace] = useState(false);
-  const [workspaceFormData, setWorkspaceFormData] = useState({ name: '', description: '' });
+  const [isEditingProject, setIsEditingProject] = useState(false);
+  const [projectFormData, setProjectFormData] = useState({ name: '', description: '' });
+  const [orgUsers, setOrgUsers] = useState([]);
 
   useEffect(() => {
     fetchData();
-  }, [workspaceId]);
+  }, [projectId]);
 
   const fetchData = async () => {
     try {
-      const [workspaceRes, teamMembersRes] = await Promise.all([
-        workspaceAPI.getById(workspaceId),
-        teamAPI.getMyMembers(), // Get only accepted team members invited by current user
+      const [projectRes, orgUsersRes] = await Promise.all([
+        projectAPI.getById(projectId),
+        organizationAPI.getUsers(),
       ]);
-      setWorkspace(workspaceRes.data);
+      setProject(projectRes.data);
+      setOrgUsers(orgUsersRes.data || []);
       
-      // Team API returns array of accepted team members (invited by current user)
-      let users = [];
-      if (Array.isArray(teamMembersRes.data)) {
-        users = teamMembersRes.data;
-      } else if (teamMembersRes.data?.data && Array.isArray(teamMembersRes.data.data)) {
-        users = teamMembersRes.data.data;
-      }
-      
-      console.log(`Loaded ${users.length} accepted team members for workspace settings`);
-      setAllUsers(users);
+      // Use organization users as available users for adding to project
+      setAllUsers(orgUsersRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Failed to load workspace');
+      toast.error('Failed to load project');
+      navigate('/projects');
       // Set empty array as fallback
       setAllUsers([]);
       if (error.response?.status === 404 || error.response?.status === 403) {
@@ -57,7 +52,7 @@ const WorkspaceSettings = () => {
   const handleAddMember = async () => {
     if (!selectedUserId) return;
     try {
-      await workspaceAPI.addMember(workspaceId, selectedUserId);
+      await projectAPI.assign(projectId, selectedUserId);
       toast.success('Member added successfully');
       setShowAddMember(false);
       setSelectedUserId('');
@@ -70,7 +65,7 @@ const WorkspaceSettings = () => {
   const handleRemoveMember = async (userId) => {
     if (!window.confirm('Are you sure you want to remove this member?')) return;
     try {
-      await workspaceAPI.removeMember(workspaceId, userId);
+      await projectAPI.removeMember(projectId, userId);
       toast.success('Member removed successfully');
       fetchData();
     } catch (error) {
@@ -80,7 +75,7 @@ const WorkspaceSettings = () => {
 
   const handleUpdateRole = async (userId, newRole) => {
     try {
-      await workspaceAPI.updateMemberRole(workspaceId, userId, newRole);
+      await projectAPI.updateMemberRole(projectId, userId, newRole);
       toast.success('Role updated successfully');
       fetchData();
     } catch (error) {
@@ -88,46 +83,46 @@ const WorkspaceSettings = () => {
     }
   };
 
-  const handleEditWorkspace = () => {
-    setWorkspaceFormData({
-      name: workspace.name,
-      description: workspace.description || '',
+  const handleEditProject = () => {
+    setProjectFormData({
+      name: project.name,
+      description: project.description || '',
     });
-    setIsEditingWorkspace(true);
+    setIsEditingProject(true);
   };
 
-  const handleSaveWorkspace = async (e) => {
+  const handleSaveProject = async (e) => {
     e?.preventDefault();
     try {
-      await workspaceAPI.update(workspaceId, workspaceFormData);
-      toast.success('Workspace updated successfully');
-      setIsEditingWorkspace(false);
+      await projectAPI.update(projectId, projectFormData);
+      toast.success('Project updated successfully');
+      setIsEditingProject(false);
       fetchData();
     } catch (error) {
-      toast.error(error.response?.data?.msg || 'Failed to update workspace');
+      toast.error(error.response?.data?.msg || 'Failed to update project');
     }
   };
 
-  const handleDeleteWorkspace = async () => {
-    const confirmMessage = `⚠️ WARNING: Are you sure you want to delete "${workspace.name}"?\n\nThis will PERMANENTLY DELETE:\n- All boards in this workspace\n- All tasks in those boards\n\nThis action CANNOT be undone!`;
+  const handleDeleteProject = async () => {
+    const confirmMessage = `⚠️ WARNING: Are you sure you want to delete "${project.name}"?\n\nThis will PERMANENTLY DELETE:\n- All boards in this project\n- All tasks in those boards\n\nThis action CANNOT be undone!`;
     
     if (!window.confirm(confirmMessage)) return;
     
     try {
-      await workspaceAPI.delete(workspaceId);
-      toast.success('Workspace deleted successfully');
+      await projectAPI.delete(projectId);
+      toast.success('Project deleted successfully');
       navigate('/dashboard');
     } catch (error) {
-      toast.error(error.response?.data?.msg || 'Failed to delete workspace');
+      toast.error(error.response?.data?.msg || 'Failed to delete project');
     }
   };
 
-  const isWorkspaceAdmin = () => {
-    if (!workspace || !user) {
+  const isProjectAdmin = () => {
+    if (!project || !user) {
       return false;
     }
     
-    // App admins can always manage workspaces
+    // App admins can always manage projects
     if (user.role === 'admin') {
       return true;
     }
@@ -152,9 +147,9 @@ const WorkspaceSettings = () => {
     
     const userIdStr = normalizeId(userId);
     
-    // Check if user is workspace creator
+    // Check if user is project creator
     // createdBy can be: ObjectId, populated object {_id: ...}, or string
-    const createdById = workspace.createdBy?._id || workspace.createdBy;
+    const createdById = project.createdBy?._id || project.createdBy;
     const createdByIdStr = normalizeId(createdById);
     
     // Compare as strings
@@ -167,8 +162,8 @@ const WorkspaceSettings = () => {
       return true;
     }
     
-    // Check if user is workspace admin member
-    const member = workspace.members?.find((m) => {
+    // Check if user is project admin member
+    const member = project.members?.find((m) => {
       const memberUserId = m.user?._id || m.user;
       const memberIdStr = normalizeId(memberUserId);
       return memberIdStr === userIdStr;
@@ -178,7 +173,7 @@ const WorkspaceSettings = () => {
   };
 
   const getMemberRole = (member) => {
-    const createdById = workspace.createdBy?._id || workspace.createdBy;
+    const createdById = project.createdBy?._id || project.createdBy;
     const memberUserId = member.user?._id || member.user;
     
     if (createdById?.toString() === memberUserId?.toString() || createdById === memberUserId) {
@@ -197,11 +192,11 @@ const WorkspaceSettings = () => {
     );
   }
 
-  if (!workspace) {
+  if (!project) {
     return (
       <Layout>
         <div className="card text-center py-12">
-          <p className="text-gray-600">Workspace not found</p>
+          <p className="text-gray-600">Project not found</p>
         </div>
       </Layout>
     );
@@ -211,7 +206,7 @@ const WorkspaceSettings = () => {
   const availableUsers = Array.isArray(allUsers) 
     ? allUsers.filter((u) => {
         // Filter out users who are already members
-        const isAlreadyMember = workspace.members?.some((m) => {
+        const isAlreadyMember = project.members?.some((m) => {
           const memberUserId = m.user._id || m.user;
           return memberUserId === u._id || memberUserId?.toString() === u._id?.toString();
         });
@@ -235,14 +230,14 @@ const WorkspaceSettings = () => {
       <div>
         <div className="flex items-center space-x-4 mb-8">
           <button
-            onClick={() => navigate(`/workspace/${workspaceId}/boards`)}
+            onClick={() => navigate(`/project/${projectId}/boards`)}
             className="p-2 hover:bg-gray-100 rounded-lg"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Workspace Settings</h1>
-            <p className="text-gray-600 mt-1">{workspace.name}</p>
+            <h1 className="text-3xl font-bold text-gray-900">Project Settings</h1>
+            <p className="text-gray-600 mt-1">{project.name}</p>
           </div>
         </div>
 
@@ -252,10 +247,10 @@ const WorkspaceSettings = () => {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 flex items-center space-x-2">
                   <Users className="h-5 w-5" />
-                  <span>Members ({workspace.members?.filter(m => m && m.user && (m.user._id || m.user)).length || 0})</span>
+                  <span>Members ({project.members?.filter(m => m && m.user && (m.user._id || m.user)).length || 0})</span>
                 </h2>
                 <div className="flex items-center space-x-3">
-                  {isWorkspaceAdmin() ? (
+                  {isProjectAdmin() ? (
                     <button
                       onClick={() => setShowAddMember(true)}
                       className="btn-primary flex items-center space-x-2 hover:shadow-lg transition-shadow"
@@ -267,27 +262,18 @@ const WorkspaceSettings = () => {
                     <div className="text-sm text-gray-500 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
                       <span className="flex items-center space-x-1">
                         <Shield className="h-4 w-4" />
-                        <span>Only workspace admins can add members</span>
+                        <span>Only project admins can add members</span>
                       </span>
-                      {/* Debug info - remove in production */}
-                      {process.env.NODE_ENV === 'development' && (
-                        <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-gray-600 font-mono">
-                          <div>User ID: {user?._id || user?.id || 'NOT FOUND'}</div>
-                          <div>Creator ID: {workspace.createdBy?._id || workspace.createdBy || 'NOT FOUND'}</div>
-                          <div>User Role: {user?.role || 'NOT FOUND'}</div>
-                          <div>Match: {String(user?._id || user?.id) === String(workspace.createdBy?._id || workspace.createdBy) ? 'YES' : 'NO'}</div>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
               </div>
 
-              {!workspace.members || workspace.members.length === 0 ? (
+              {!project.members || project.members.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                   <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-4">No members in this workspace yet.</p>
-                  {isWorkspaceAdmin() && (
+                  <p className="text-gray-600 mb-4">No members in this project yet.</p>
+                  {isProjectAdmin() && (
                     <button
                       onClick={() => setShowAddMember(true)}
                       className="btn-primary inline-flex items-center space-x-2"
@@ -299,7 +285,7 @@ const WorkspaceSettings = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {workspace.members
+                  {project.members
                     .filter((member) => {
                       // Only show members that have valid user data
                       return member && member.user && (member.user._id || member.user);
@@ -341,7 +327,7 @@ const WorkspaceSettings = () => {
                               </span>
                             ) : (
                               <>
-                                {isWorkspaceAdmin() && (
+                                {isProjectAdmin() && (
                                   <select
                                     value={member.role}
                                     onChange={(e) => handleUpdateRole(memberId, e.target.value)}
@@ -351,13 +337,13 @@ const WorkspaceSettings = () => {
                                     <option value="admin">Admin</option>
                                   </select>
                                 )}
-                                {!isWorkspaceAdmin() && (
+                                {!isProjectAdmin() && (
                                   <span className="flex items-center space-x-1 px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">
                                     <Shield className="h-3 w-3" />
                                     <span className="capitalize">{member.role}</span>
                                   </span>
                                 )}
-                                {isWorkspaceAdmin() && (
+                                {isProjectAdmin() && (
                                   <button
                                     onClick={() => handleRemoveMember(memberId)}
                                     className="p-1 text-red-600 hover:bg-red-50 rounded"
@@ -382,20 +368,20 @@ const WorkspaceSettings = () => {
           <div className="space-y-6">
             <div className="card">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">Workspace Info</h2>
-                {isWorkspaceAdmin() && (
+                <h2 className="text-xl font-semibold text-gray-900">Project Info</h2>
+                {isProjectAdmin() && (
                   <div className="flex space-x-2">
-                    {!isEditingWorkspace ? (
+                    {!isEditingProject ? (
                       <>
                         <button
-                          onClick={handleEditWorkspace}
+                          onClick={handleEditProject}
                           className="btn-secondary text-sm flex items-center space-x-1"
                         >
                           <Edit className="h-4 w-4" />
                           <span>Edit</span>
                         </button>
                         <button
-                          onClick={handleDeleteWorkspace}
+                          onClick={handleDeleteProject}
                           className="bg-red-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-red-700 transition-colors flex items-center space-x-1"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -405,13 +391,13 @@ const WorkspaceSettings = () => {
                     ) : (
                       <>
                         <button
-                          onClick={handleSaveWorkspace}
+                          onClick={handleSaveProject}
                           className="btn-primary text-sm"
                         >
                           Save
                         </button>
                         <button
-                          onClick={() => setIsEditingWorkspace(false)}
+                          onClick={() => setIsEditingProject(false)}
                           className="btn-secondary text-sm"
                         >
                           Cancel
@@ -422,15 +408,15 @@ const WorkspaceSettings = () => {
                 )}
               </div>
               
-              {isEditingWorkspace ? (
-                <form onSubmit={handleSaveWorkspace} className="space-y-3">
+              {isEditingProject ? (
+                <form onSubmit={handleSaveProject} className="space-y-3">
                   <div>
                     <label className="label">Name</label>
                     <input
                       type="text"
                       className="input-field"
-                      value={workspaceFormData.name}
-                      onChange={(e) => setWorkspaceFormData({ ...workspaceFormData, name: e.target.value })}
+                      value={projectFormData.name}
+                      onChange={(e) => setProjectFormData({ ...projectFormData, name: e.target.value })}
                       required
                     />
                   </div>
@@ -439,8 +425,8 @@ const WorkspaceSettings = () => {
                     <textarea
                       className="input-field"
                       rows="3"
-                      value={workspaceFormData.description}
-                      onChange={(e) => setWorkspaceFormData({ ...workspaceFormData, description: e.target.value })}
+                      value={projectFormData.description}
+                      onChange={(e) => setProjectFormData({ ...projectFormData, description: e.target.value })}
                     />
                   </div>
                 </form>
@@ -448,18 +434,18 @@ const WorkspaceSettings = () => {
                 <div className="space-y-3">
                   <div>
                     <p className="text-sm text-gray-500">Name</p>
-                    <p className="font-medium text-gray-900">{workspace.name}</p>
+                    <p className="font-medium text-gray-900">{project.name}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Description</p>
                     <p className="font-medium text-gray-900">
-                      {workspace.description || 'No description'}
+                      {project.description || 'No description'}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Created</p>
                     <p className="font-medium text-gray-900">
-                      {new Date(workspace.createdAt).toLocaleDateString()}
+                      {new Date(project.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -471,7 +457,7 @@ const WorkspaceSettings = () => {
         {showAddMember && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-              <h2 className="text-2xl font-bold mb-4">Add Member to Workspace</h2>
+              <h2 className="text-2xl font-bold mb-4">Add Member to Project</h2>
               <div className="space-y-4">
                 <div>
                   <label className="label flex items-center space-x-2">
@@ -553,7 +539,7 @@ const WorkspaceSettings = () => {
                 {!searchQuery.trim() && availableUsers.length === 0 && allUsers.length > 0 && (
                   <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
                     <p className="text-sm text-gray-600 text-center">
-                      All users are already members of this workspace
+                      All users are already members of this project
                     </p>
                   </div>
                 )}
@@ -594,5 +580,5 @@ const WorkspaceSettings = () => {
   );
 };
 
-export default WorkspaceSettings;
+export default ProjectSettings;
 

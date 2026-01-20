@@ -53,9 +53,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, password, role = 'user') => {
+  const register = async (name, email, password, invitationToken = null, organizationName = null) => {
     try {
-      const response = await authAPI.register({ name, email, password, role });
+      const payload = { name, email, password };
+      
+      // Add invitation token if provided, otherwise add organization name
+      if (invitationToken) {
+        payload.invitationToken = invitationToken;
+      } else {
+        // If no invitation, use provided organizationName or create default
+        const orgName = organizationName || (name ? `${name}'s Organization` : 'My Organization');
+        payload.organizationName = orgName;
+      }
+      
+      const response = await authAPI.register(payload);
       const { token, user: userData } = response.data;
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));

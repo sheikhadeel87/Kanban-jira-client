@@ -5,11 +5,12 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import UserDashboard from './pages/User/UserDashboard';
-import WorkspaceList from './pages/WorkspaceList';
-import WorkspaceBoards from './pages/WorkspaceBoards';
-import WorkspaceSettings from './pages/WorkspaceSettings';
+import ProjectList from './pages/ProjectList';
+import ProjectBoards from './pages/ProjectBoards';
+import ProjectSettings from './pages/ProjectSettings';
 import BoardView from './pages/BoardView';
 import TeamMembers from './pages/TeamMembers';
+import Organization from './pages/Organization';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Wrapper to handle invite token - always show Login/Register if inviteToken is present
@@ -68,6 +69,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/organization"
+        element={
+          <ProtectedRoute>
+            <Organization />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/team-members"
         element={
           <ProtectedRoute>
@@ -76,18 +85,26 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/workspace/:workspaceId/boards"
+        path="/projects"
         element={
           <ProtectedRoute>
-            <WorkspaceBoards />
+            <ProjectList />
           </ProtectedRoute>
         }
       />
       <Route
-        path="/workspace/:workspaceId/settings"
+        path="/project/:projectId/boards"
         element={
           <ProtectedRoute>
-            <WorkspaceSettings />
+            <ProjectBoards />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId/settings"
+        element={
+          <ProtectedRoute>
+            <ProjectSettings />
           </ProtectedRoute>
         }
       />

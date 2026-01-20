@@ -17,8 +17,7 @@ if (API_BASE_URL) {
   }
 }
 
-// Debug log (remove in production)
-console.log('API Base URL:', API_BASE_URL);
+// API Base URL configured
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -61,22 +60,32 @@ export const authAPI = {
   getMe: () => api.get('/auth/me'),
 };
 
-// Workspace API
-export const workspaceAPI = {
-  getAll: () => api.get('/workspaces'),
-  getById: (id) => api.get(`/workspaces/${id}`),
-  create: (data) => api.post('/workspaces', data),
-  update: (id, data) => api.put(`/workspaces/${id}`, data),
-  delete: (id) => api.delete(`/workspaces/${id}`),
-  addMember: (id, userId) => api.post(`/workspaces/${id}/members`, { userId }),
-  removeMember: (id, userId) => api.delete(`/workspaces/${id}/members/${userId}`),
-  updateMemberRole: (id, userId, role) => api.put(`/workspaces/${id}/members/${userId}/role`, { role }),
+// Organization API
+export const organizationAPI = {
+  create: (data) => api.post('/organizations', data),
+  getMy: () => api.get('/organizations/me'),
+  getUsers: () => api.get('/organizations/users'),
+  invite: (email) => api.post('/organizations/invite', { email }),
+  delete: (id) => api.delete(`/organizations/${id}`),
+};
+
+// Project API (renamed from workspace)
+export const projectAPI = {
+  getAll: () => api.get('/projects'),
+  getById: (id) => api.get(`/projects/${id}`),
+  create: (data) => api.post('/projects', data),
+  update: (id, data) => api.put(`/projects/${id}`, data),
+  delete: (id) => api.delete(`/projects/${id}`),
+  assign: (id, userId) => api.post(`/projects/${id}/assign`, { userId }),
+  addMember: (id, userId) => api.post(`/projects/${id}/members`, { userId }),
+  removeMember: (id, userId) => api.delete(`/projects/${id}/members/${userId}`),
+  updateMemberRole: (id, userId, role) => api.put(`/projects/${id}/members/${userId}/role`, { role }),
 };
 
 // Board API
 export const boardAPI = {
   getAll: () => api.get('/boards'),
-  getByWorkspace: (workspaceId) => api.get(`/boards/workspace/${workspaceId}`),
+  getByProject: (projectId) => api.get(`/boards/project/${projectId}`),
   getById: (id) => api.get(`/boards/${id}`),
   create: (data) => api.post('/boards', data),
   update: (id, data) => api.put(`/boards/${id}`, data),

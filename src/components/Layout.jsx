@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, LayoutDashboard, Users, FolderKanban, CheckSquare } from 'lucide-react';
+import { LogOut, LayoutDashboard, Users, FolderKanban, CheckSquare, Building2 } from 'lucide-react';
 
 const Layout = ({ children }) => {
   const { user, logout, isAdmin } = useAuth();
@@ -57,11 +57,18 @@ const Layout = ({ children }) => {
                 ) : (
                   <>
                   <Link
+                    to="/organization"
+                    className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  >
+                    <Building2 className="h-4 w-4" />
+                    <span>Organization</span>
+                  </Link>
+                  <Link
                     to="/dashboard"
                     className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100"
                   >
                     <LayoutDashboard className="h-4 w-4" />
-                    <span>My Workspaces</span>
+                    <span>My Projects</span>
                   </Link>
                   <Link
                       to="/team-members"

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { workspaceAPI, boardAPI, taskAPI, userAPI } from '../../services/api';
+import { projectAPI, boardAPI, taskAPI, userAPI } from '../../services/api';
 import { Building2, FolderKanban, CheckSquare, Users, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const AdminHome = () => {
   const [stats, setStats] = useState({
-    workspaces: 0,
+    projects: 0,
     boards: 0,
     tasks: 0,
     users: 0,
@@ -16,13 +16,13 @@ const AdminHome = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [workspacesRes, boardsRes, usersRes] = await Promise.all([
-          workspaceAPI.getAll(),
+        const [projectsRes, boardsRes, usersRes] = await Promise.all([
+          projectAPI.getAll(),
           boardAPI.getAll(),
           userAPI.getAll(),
         ]);
 
-        const workspaces = workspacesRes.data;
+        const projects = projectsRes.data;
         const boards = boardsRes.data;
         let totalTasks = 0;
 
@@ -37,7 +37,7 @@ const AdminHome = () => {
         }
 
         setStats({
-          workspaces: workspaces.length,
+          projects: projects.length,
           boards: boards.length,
           tasks: totalTasks,
           users: usersRes.data.length,
@@ -62,11 +62,11 @@ const AdminHome = () => {
 
   const statCards = [
     {
-      title: 'Total Workspaces',
-      value: stats.workspaces,
+      title: 'Total Projects',
+      value: stats.projects,
       icon: Building2,
       color: 'bg-purple-500',
-      link: '/admin/workspaces',
+      link: '/admin/projects',
     },
     {
       title: 'Total Boards',
@@ -126,10 +126,10 @@ const AdminHome = () => {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
           <div className="space-y-3">
             <Link
-              to="/admin/workspaces"
+              to="/admin/projects"
               className="block w-full btn-primary text-center"
             >
-              Manage Workspaces
+              Manage Projects
             </Link>
             <Link
               to="/admin/boards"
@@ -150,7 +150,7 @@ const AdminHome = () => {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">System Information</h2>
           <div className="space-y-2 text-sm text-gray-600">
             <p>Welcome to the Admin Dashboard</p>
-            <p>You can manage all workspaces, boards, tasks, and users from here.</p>
+            <p>You can manage all projects, boards, tasks, and users from here.</p>
             <p className="mt-4 text-xs text-gray-500">
               Use the navigation menu to access different management sections.
             </p>

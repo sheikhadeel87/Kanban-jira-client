@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
-import WorkspaceManagement from './WorkspaceManagement';
+import ProjectManagement from './ProjectManagement';
 import BoardManagement from './BoardManagement';
 import TaskManagement from './TaskManagement';
 import AdminHome from './AdminHome';
@@ -10,7 +10,8 @@ const AdminDashboard = () => {
     <Layout>
       <Routes>
         <Route index element={<AdminHome />} />
-        <Route path="workspaces" element={<WorkspaceManagement />} />
+        <Route path="projects" element={<ProjectManagement />} />
+        <Route path="workspaces" element={<ProjectManagement />} />
         <Route path="boards" element={<BoardManagement />} />
         <Route path="boards/:boardId" element={<BoardManagement />} />
         <Route path="tasks" element={<TaskManagement />} />

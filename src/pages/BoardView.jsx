@@ -127,8 +127,8 @@ const BoardView = () => {
     );
   }
 
-  const workspaceName = board.workspace?.name || 'Workspace';
-  const workspaceId = board.workspace?._id || board.workspace;
+  const projectName = board.project?.name || 'Project';
+  const projectId = board.project?._id || board.project;
 
   return (
     <Layout>
@@ -144,15 +144,15 @@ const BoardView = () => {
           <ChevronRight className="h-4 w-4" />
           <button
             onClick={() => {
-              if (workspaceId) {
-                navigate(`/workspace/${workspaceId}/boards`);
+              if (projectId) {
+                navigate(`/project/${projectId}/boards`);
               } else {
                 navigate('/dashboard');
               }
             }}
             className="hover:text-primary-600 transition-colors"
           >
-            {workspaceName}
+            {projectName}
           </button>
           <ChevronRight className="h-4 w-4" />
           <span className="text-gray-900 font-medium">{board.title}</span>
@@ -170,8 +170,8 @@ const BoardView = () => {
                   <h1 className="text-4xl font-bold text-gray-900 mb-2">{board.title}</h1>
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
                     <span className="flex items-center space-x-1">
-                      <span className="font-medium">Workspace:</span>
-                      <span>{workspaceName}</span>
+                      <span className="font-medium">Project:</span>
+                      <span>{projectName}</span>
                     </span>
                     {board.owner && (
                       <span className="flex items-center space-x-1">

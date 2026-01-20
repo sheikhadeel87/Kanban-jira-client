@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { teamAPI, userAPI, workspaceAPI } from '../services/api';
+import { teamAPI, userAPI, projectAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { Users, UserPlus, Search, Mail, Edit, Trash2 } from 'lucide-react';
 import Layout from '../components/Layout';
@@ -8,7 +8,7 @@ import Layout from '../components/Layout';
 const TeamMembers = () => {
   const { user, isAdmin } = useAuth();
   const [users, setUsers] = useState([]);
-  const [workspaces, setWorkspaces] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -21,7 +21,7 @@ const TeamMembers = () => {
 
   useEffect(() => {
     fetchUsers();
-    fetchWorkspaces();
+    fetchProjects();
   }, []);
 
   // Refresh users when page becomes visible (e.g., when user navigates back)
@@ -311,12 +311,12 @@ const TeamMembers = () => {
                               </button>
                             </>
                           )}
-                          {/* Only show delete button if user is a workspace creator */}
-                          {isWorkspaceCreator() && (
+                          {/* Only show delete button if user is a project creator or admin/owner */}
+                          {isProjectCreator() && (
                             <button
                               onClick={() => handleDeleteClick(userData)}
                               className="text-red-600 hover:text-red-900 p-2 rounded-md hover:bg-red-50"
-                              title="Delete User (Workspace Creator Only)"
+                              title="Delete User (Project Creator/Admin Only)"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
