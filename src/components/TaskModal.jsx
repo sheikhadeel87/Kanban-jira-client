@@ -11,6 +11,8 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
     description: '',
     status: 'todo',
     assignedTo: [],
+    priority: 'medium',
+    dueDate: '',
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [currentAttachment, setCurrentAttachment] = useState(null);
@@ -48,15 +50,19 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
         description: task.description || '',
         status: task.status,
         assignedTo: task.assignedTo?.map((u) => u._id || u) || [],
+        priority: task.priority || 'medium',
+        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
       });
       setCurrentAttachment(task.attachment || null);
-      setSelectedFile(null); // Reset selected file
+      setSelectedFile(null);
     } else {
       setFormData({
         title: '',
         description: '',
         status: 'todo',
         assignedTo: [],
+        priority: 'medium',
+        dueDate: '',
       });
       setCurrentAttachment(null);
       setSelectedFile(null);
@@ -71,6 +77,8 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
         ...formData,
         board: boardId,
         assignedTo: formData.assignedTo,
+        priority: formData.priority || 'medium',
+        dueDate: formData.dueDate || null,
       };
       // If a file is selected, add it to the data
       if (selectedFile) {
@@ -172,6 +180,31 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
           </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Priority</label>
+              <select
+                className="input-field"
+                value={formData.priority}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div>
+              <label className="label">Due Date</label>
+              <input
+                type="date"
+                className="input-field"
+                value={formData.dueDate}
+                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+              />
+            </div>
+          </div>
+          
           {/* status in add task modal */}
           {/* <div>
             <label className="label">Status</label>
