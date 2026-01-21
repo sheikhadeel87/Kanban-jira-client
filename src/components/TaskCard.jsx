@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { MoreVertical, Edit, Trash2, User, Image as ImageIcon, File, Paperclip } from 'lucide-react';
+import { MoreVertical, Edit, Trash2, User, Image as ImageIcon, File, Paperclip, AlertCircle, Calendar } from 'lucide-react';
 
 const TaskCard = ({ task, onEdit, onDelete }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -89,6 +89,34 @@ const TaskCard = ({ task, onEdit, onDelete }) => {
     return colors[index] || colors[0];
   };
 
+  // Priority colors
+  const getPriorityColor = (priority) => {
+    switch (priority?.toLowerCase()) {
+      case 'high':
+        return 'bg-red-100 text-red-700 border-red-300';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-700 border-yellow-300';
+      case 'low':
+        return 'bg-green-100 text-green-700 border-green-300';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-300';
+    }
+  };
+
+  // Check if due date is overdue or soon
+  const getDueDateStatus = (dueDate) => {
+    if (!dueDate) return null;
+    const due = new Date(dueDate);
+    const now = new Date();
+    const diff = due - now;
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    
+    if (days < 0) return { text: 'Overdue', color: 'text-red-600' };
+    if (days === 0) return { text: 'Due today', color: 'text-orange-600' };
+    if (days <= 3) return { text: `Due in ${days}d`, color: 'text-yellow-600' };
+    return { text: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), color: 'text-gray-600' };
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -145,6 +173,26 @@ const TaskCard = ({ task, onEdit, onDelete }) => {
       {task.description && (
         <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">{task.description}</p>
       )}
+      
+      {/* Priority and Due Date */}
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        {task.priority && (
+          <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-md text-xs font-medium border ${getPriorityColor(task.priority)}`}>
+            <AlertCircle className="h-3 w-3" />
+            <span className="capitalize">{task.priority}</span>
+          </span>
+        )}
+        {task.dueDate && (() => {
+          const dueDateStatus = getDueDateStatus(task.dueDate);
+          return dueDateStatus ? (
+            <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-md text-xs font-medium ${dueDateStatus.color}`}>
+              <Calendar className="h-3 w-3" />
+              <span>{dueDateStatus.text}</span>
+            </span>
+          ) : null;
+        })()}
+      </div>
+      
       {task.assignedTo && task.assignedTo.length > 0 && (
         <div className="flex items-center space-x-2 mb-3">
           <div className="flex -space-x-2">

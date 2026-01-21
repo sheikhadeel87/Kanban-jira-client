@@ -1,14 +1,37 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, LayoutDashboard, Users, FolderKanban, CheckSquare, Building2 } from 'lucide-react';
+import { LogOut, LayoutDashboard, Users, FolderKanban, CheckSquare, Building2, ChevronDown, User as UserIcon } from 'lucide-react';
 
 const Layout = ({ children }) => {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
+      }
+    };
+    if (showProfileDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showProfileDropdown]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const getUserInitials = (name) => {
+    if (!name) return '?';
+    const parts = name.split(' ');
+    return parts.length >= 2 
+      ? (parts[0][0] + parts[1][0]).toUpperCase()
+      : name[0]?.toUpperCase() || '?';
   };
 
   return (
@@ -82,21 +105,42 @@ const Layout = ({ children }) => {
               </nav>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-700">
-                <span className="font-medium">{user?.name}</span>
-                {isAdmin() && (
-                  <span className="ml-2 px-2 py-1 bg-primary-100 text-primary-800 text-xs font-semibold rounded">
-                    Admin
-                  </span>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-sm font-semibold">
+                    {getUserInitials(user?.name)}
+                  </div>
+                  <div className="hidden md:block text-left">
+                    <div className="text-sm font-medium text-gray-900">{user?.name}</div>
+                    <div className="text-xs text-gray-500">{user?.email}</div>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-gray-500 hidden md:block" />
+                </button>
+                
+                {showProfileDropdown && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <div className="text-sm font-medium text-gray-900">{user?.name}</div>
+                      <div className="text-xs text-gray-500 truncate">{user?.email}</div>
+                      {isAdmin() && (
+                        <span className="inline-block mt-1 px-2 py-0.5 bg-primary-100 text-primary-800 text-xs font-semibold rounded">
+                          Admin
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
                 )}
               </div>
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Logout</span>
-              </button>
             </div>
           </div>
         </div>

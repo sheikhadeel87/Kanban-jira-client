@@ -49,8 +49,54 @@ const Organization = () => {
 
     setInviteLoading(true);
     try {
-      await organizationAPI.invite(inviteEmail);
-      toast.success(`Invitation sent to ${inviteEmail}`);
+      const response = await organizationAPI.invite(inviteEmail);
+      const data = response.data;
+      
+      if (data.emailSent) {
+        toast.success(`Invitation email sent successfully to ${inviteEmail}`);
+      } else {
+        // Email failed but invitation was created
+        toast.success(`Invitation created! Email failed to send.`, {
+          duration: 5000,
+        });
+        
+        // Show invitation link if available
+        if (data.invitation?.invitationLink) {
+          const link = data.invitation.invitationLink;
+          toast(
+            (t) => (
+              <div className="space-y-2">
+                <p className="font-semibold">Share this invitation link:</p>
+                <div className="flex items-center space-x-2 bg-gray-100 p-2 rounded">
+                  <input
+                    type="text"
+                    value={link}
+                    readOnly
+                    className="flex-1 text-sm bg-white px-2 py-1 rounded border"
+                    onClick={(e) => e.target.select()}
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(link);
+                      toast.success('Link copied!');
+                    }}
+                    className="px-3 py-1 bg-primary-600 text-white rounded text-sm hover:bg-primary-700"
+                  >
+                    Copy
+                  </button>
+                </div>
+                {data.emailError && (
+                  <p className="text-xs text-orange-600 mt-1">
+                    ⚠️ {data.emailError}
+                  </p>
+                )}
+              </div>
+            ),
+            { duration: 10000 }
+          );
+        }
+      }
+      
       setInviteEmail('');
       setShowInviteModal(false);
       fetchUsers(); // Refresh users list
