@@ -268,34 +268,42 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-6xl max-h-[90vh] flex flex-col">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
-          <h2 className="text-2xl font-bold">{task ? 'Edit Task' : 'Create Task'}</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-lg w-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] flex flex-col my-4 sm:my-0">
+        {/* Header */}
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-3 sm:px-4 lg:px-6 py-3 sm:py-4 flex justify-between items-center z-10">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">{task ? 'Edit Task' : 'Create Task'}</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         </div>
-        <div className="flex flex-1 overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6 border-r border-gray-200">
-            <form onSubmit={handleSubmit} className="space-y-4">
+
+        {/* Main Content - Stack on mobile, side-by-side on desktop */}
+        <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+          {/* Left Column - Form */}
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 lg:border-r border-gray-200">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+              {/* Title */}
               <div>
-                <label className="label">Title</label>
+                <label className="label text-sm sm:text-base">Title</label>
                 <input
                   type="text"
-                  className="input-field"
+                  className="input-field text-sm sm:text-base"
                   value={formData.title || ''}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
                 />
               </div>
+
+              {/* Description */}
               <div>
-                <label className="label">Description</label>
+                <label className="label text-sm sm:text-base">Description</label>
                 <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
                   <ReactQuill
+                    key={task?._id || 'new-task'}
                     theme="snow"
                     value={formData.description || ''}
                     onChange={(value) => setFormData({ ...formData, description: value })}
@@ -303,17 +311,19 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                     formats={quillFormats}
                     placeholder="Add a description..."
                     style={{
-                      height: '200px',
+                      height: '150px',
                     }}
+                    className="text-sm sm:text-base"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* Priority and Due Date - Stack on mobile */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="label">Priority</label>
+                  <label className="label text-sm sm:text-base">Priority</label>
                   <select
-                    className="input-field"
+                    className="input-field text-sm sm:text-base"
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                   >
@@ -323,53 +333,39 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                   </select>
                 </div>
                 <div>
-                  <label className="label">Due Date</label>
+                  <label className="label text-sm sm:text-base">Due Date</label>
                   <input
                     type="date"
-                    className="input-field"
+                    className="input-field text-sm sm:text-base"
                     value={formData.dueDate}
                     onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
                   />
                 </div>
               </div>
 
-              {/* status in add task modal */}
-              {/* <div>
-            <label className="label">Status</label>
-            <select
-              className="input-field"
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-            >
-              <option value="todo">To Do</option>
-              <option value="in_progress">In Progress</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div> */}
-
-              {/*UploadFile section here*/}
+              {/* Attachment Section */}
               <div>
-                <label className="label flex items-center space-x-2">
+                <label className="label flex items-center space-x-2 text-sm sm:text-base">
                   <Paperclip className="h-4 w-4" />
                   <span>Attachment (Optional)</span>
                 </label>
 
-                {/*Current attachment display here UploadFile*/}
+                {/* Current attachment */}
                 {currentAttachment && !selectedFile && (
-                  <div className="mb-3 p-3bg-blue-50 border border-blue-200 rounded-lg flex item-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-blue-100  p-2 rounded">
-                        <File className="h-5 w-5 text-blue-600" />
+                  <div className="mb-3 p-2 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                    <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                      <div className="bg-blue-100 p-1.5 sm:p-2 rounded flex-shrink-0">
+                        <File className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{currentAttachment}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{currentAttachment}</p>
                         <p className="text-xs text-gray-500">Current attachment</p>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={handleRemoveFile}
-                      className="p-1 text-red-600 hover:bg-red-50 rounded"
+                      className="p-1 text-red-600 hover:bg-red-50 rounded flex-shrink-0 ml-2"
                       title="Remove attachment"
                     >
                       <X className="h-4 w-4" />
@@ -377,22 +373,22 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                   </div>
                 )}
 
-                {/* Selected file display here UploadFile*/}
+                {/* Selected file */}
                 {selectedFile && (
-                  <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-green-100 p-2 rounded">
-                        <File className="h-5 w-5 text-green-600" />
+                  <div className="mb-3 p-2 sm:p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+                    <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                      <div className="bg-green-100 p-1.5 sm:p-2 rounded flex-shrink-0">
+                        <File className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{selectedFile.name}</p>
                         <p className="text-xs text-gray-500">{formatFileSize(selectedFile.size)}</p>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={handleRemoveFile}
-                      className="p-1 text-red-600 hover:bg-red-50 rounded"
+                      className="p-1 text-red-600 hover:bg-red-50 rounded flex-shrink-0 ml-2"
                       title="Remove File"
                     >
                       <X className="h-4 w-4" />
@@ -400,8 +396,8 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                   </div>
                 )}
 
-                {/**UploadFile input field here*/}
-                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                {/* File upload input */}
+                <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-gray-50">
                   <input
                     type="file"
                     id="file-upload"
@@ -411,7 +407,7 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                   />
                   <label
                     htmlFor="file-upload"
-                    className="curser-pointer flex item-center space-x-2 text-sm text-gray-700 hover:text-primary-600 transition-colors"
+                    className="cursor-pointer flex items-center space-x-2 text-xs sm:text-sm text-gray-700 hover:text-primary-600 transition-colors"
                   >
                     <Paperclip className="h-4 w-4" />
                     <span>{selectedFile || currentAttachment ? 'Change File' : 'Choose File'}</span>
@@ -421,38 +417,44 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                   </p>
                 </div>
               </div>
-              {/*Assign to Team Members section here*/}
+
+              {/* Assign to Team Members */}
               <div>
-                <label className="label">Assign to Team Members</label>
+                <label className="label text-sm sm:text-base">Assign to Team Members</label>
                 <p className="text-xs text-gray-500 mb-3">
                   Select project members to assign to this task. You can assign multiple people.
                 </p>
 
                 {formData.assignedTo.length > 0 && (
                   <div className="mb-3">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Assigned Members ({formData.assignedTo.length}):</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                      Assigned Members ({formData.assignedTo.length}):
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       {getAssignedUserNames().map((name, index) => {
                         const userId = formData.assignedTo[index];
-                        const member = projectMembers.find((m) => (m.user._id || m.user) === userId);
+                        const member = projectMembers.find((m) => {
+                          const memberId = String(m.user._id || m.user);
+                          return String(userId) === memberId;
+                        });
                         const user = member?.user;
                         return (
                           <span
                             key={userId}
-                            className="inline-flex items-center space-x-2 px-3 py-2 bg-primary-100 text-primary-800 rounded-lg text-sm border border-primary-200"
+                            className="inline-flex items-center space-x-1.5 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-primary-100 text-primary-800 rounded-lg text-xs sm:text-sm border border-primary-200"
                           >
-                            <User className="h-4 w-4" />
-                            <span className="font-medium">{name}</span>
+                            <User className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="font-medium truncate max-w-[100px] sm:max-w-none">{name}</span>
                             {user?.email && (
-                              <span className="text-xs text-primary-600">({user.email})</span>
+                              <span className="text-xs text-primary-600 hidden sm:inline">({user.email})</span>
                             )}
                             <button
                               type="button"
                               onClick={() => removeAssignedUser(userId)}
-                              className="ml-1 hover:text-primary-600 transition-colors"
+                              className="ml-1 hover:text-primary-600 transition-colors flex-shrink-0"
                               title="Remove assignment"
                             >
-                              <XCircle className="h-4 w-4" />
+                              <XCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                             </button>
                           </span>
                         );
@@ -461,12 +463,12 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                   </div>
                 )}
 
-                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                <div className="border border-gray-200 rounded-lg p-2 sm:p-3 bg-gray-50">
+                  <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 block">
                     Add Team Member:
                   </label>
                   <select
-                    className="input-field bg-white"
+                    className="input-field bg-white text-sm sm:text-base"
                     value=""
                     onChange={(e) => {
                       if (e.target.value) {
@@ -491,18 +493,17 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                           </option>
                         );
                       })}
-
                   </select>
                   {projectMembers.length === 0 && (
-                    <div className="mt-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <div className="flex items-start space-x-3">
+                    <div className="mt-3 p-3 sm:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <div className="flex items-start space-x-2 sm:space-x-3">
                         <div className="flex-shrink-0">
-                          <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                            <User className="h-4 w-4 text-yellow-600" />
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <User className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
                           </div>
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-yellow-800 mb-1">
+                          <p className="text-xs sm:text-sm font-medium text-yellow-800 mb-1">
                             No project members available
                           </p>
                           <p className="text-xs text-yellow-700 mb-3">
@@ -515,7 +516,7 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                                 onClose();
                                 navigate(`/project/${projectId}/settings`);
                               }}
-                              className="inline-flex items-center space-x-2 px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-medium rounded-lg transition-colors"
+                              className="inline-flex items-center space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-medium rounded-lg transition-colors"
                             >
                               <Settings className="h-3 w-3" />
                               <span>Go to Project Settings</span>
@@ -531,49 +532,53 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                     </p>
                   )}
                 </div>
-
               </div>
-              <div className="flex space-x-3 pt-4 border-t border-gray-200">
-                <button type="submit" disabled={loading} className="btn-primary flex-1">
+
+              {/* Form Buttons */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-gray-200">
+                <button type="submit" disabled={loading} className="btn-primary flex-1 text-sm sm:text-base py-2 sm:py-2.5">
                   {loading ? 'Saving...' : task ? 'Update Task' : 'Create Task'}
                 </button>
-                <button type="button" onClick={onClose} className="btn-secondary flex-1">
+                <button type="button" onClick={onClose} className="btn-secondary flex-1 text-sm sm:text-base py-2 sm:py-2.5">
                   Cancel
                 </button>
               </div>
             </form>
           </div>
 
-          {/* Right Column - Comments Section */}
-          <div className="w-96 border-l border-gray-200 flex flex-col bg-gray-50">
-            <div className="p-4 border-b border-gray-200 bg-white">
-              <h3 className="text-lg font-semibold text-gray-900">Comments</h3>
+          {/* Right Column - Comments Section - Visible on all screens */}
+          <div className="flex flex-col bg-gray-50 border-t lg:border-t-0 lg:border-l border-gray-200 w-full lg:w-80 xl:w-96 flex-shrink-0">
+            <div className="p-3 sm:p-4 border-b border-gray-200 bg-white flex-shrink-0">
+              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <MessageSquare className="h-4 w-4 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                <span>Comments ({comments.length})</span>
+              </h3>
             </div>
 
             {/* Comments List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 sm:space-y-3 md:space-y-4 min-h-0">
               {comments.length > 0 ? (
                 comments.map((comment) => (
-                  <div key={comment._id} className="flex items-start space-x-3">
-                    <div className={`w-10 h-10 rounded-full ${getUserAvatarColor(comment.author?._id || comment.author)} text-white flex items-center justify-center text-sm font-semibold flex-shrink-0`}>
+                  <div key={comment._id} className="flex items-start space-x-2 sm:space-x-3 bg-white p-2 sm:p-2.5 md:p-3 rounded-lg border border-gray-200">
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full ${getUserAvatarColor(comment.author?._id || comment.author)} text-white flex items-center justify-center text-xs sm:text-sm font-semibold flex-shrink-0`}>
                       {getUserInitials(comment.author)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-semibold text-gray-900 text-sm">
+                      <div className="flex items-center flex-wrap gap-1 sm:gap-2 mb-1">
+                        <span className="font-semibold text-gray-900 text-xs sm:text-sm">
                           {comment.author?.name || 'Unknown'}
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatTimeAgo(comment.createdAt)}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-700">{comment.text}</p>
+                      <p className="text-xs sm:text-sm text-gray-700 break-words">{comment.text}</p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500 text-sm">
-                  <MessageSquare className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                <div className="text-center py-4 sm:py-6 md:py-8 text-gray-500 text-xs sm:text-sm">
+                  <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 mx-auto mb-2 sm:mb-3 text-gray-300" />
                   <p>No comments yet</p>
                   <p className="text-xs mt-1">Be the first to comment</p>
                 </div>
@@ -581,28 +586,28 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
             </div>
 
             {/* Comment Input */}
-            <div className="p-4 border-t border-gray-200 bg-white">
-              <div className="space-y-3">
+            <div className="p-3 sm:p-4 border-t border-gray-200 bg-white flex-shrink-0">
+              <div className="space-y-2 sm:space-y-3">
                 <textarea
-                  className="w-full border border-gray-300 rounded-lg p-3 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  rows="3"
+                  className="w-full border border-gray-300 rounded-lg p-2 sm:p-2.5 md:p-3 text-xs sm:text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  rows="2"
                   placeholder="Add a comment..."
                   value={newCommentText}
                   onChange={(e) => setNewCommentText(e.target.value)}
                 />
-                <div className="flex space-x-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="button"
                     onClick={handleCreateComment}
                     disabled={!newCommentText.trim() || commentLoading || !task}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {commentLoading ? 'Sending...' : 'Send'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setNewCommentText('')}
-                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors"
+                    className="sm:flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                   >
                     Cancel
                   </button>
@@ -614,6 +619,7 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
       </div>
     </div>
   );
+
 };
 
 export default TaskModal;

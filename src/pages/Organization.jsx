@@ -153,61 +153,78 @@ const Organization = () => {
     <Layout>
       <div>
         {/* Organization Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="bg-primary-100 p-4 rounded-lg">
-                <Building2 className="h-10 w-10 text-primary-600" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <h1 className="text-3xl font-bold text-gray-900">{organization.name}</h1>
-                  {isOwner && (
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded flex items-center space-x-1">
-                      <Crown className="h-3 w-3" />
-                      <span>Owner</span>
-                    </span>
-                  )}
-                </div>
-                {organization.description && (
-                  <p className="text-gray-600 mt-2">{organization.description}</p>
-                )}
-                <div className="flex items-center space-x-4 mt-4 text-sm text-gray-500">
-                  <span className="flex items-center space-x-1">
-                    <Users className="h-4 w-4" />
-                    <span>{orgUsers.length} {orgUsers.length === 1 ? 'member' : 'members'}</span>
-                  </span>
-                  {organization.owner && (
-                    <span className="flex items-center space-x-1">
-                      <Crown className="h-4 w-4" />
-                      <span>Owner: {organization.owner?.name || 'N/A'}</span>
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="flex space-x-2">
-              {isAdminOrOwner && (
-                <button
-                  onClick={() => setShowInviteModal(true)}
-                  className="btn-primary flex items-center space-x-2"
-                >
-                  <UserPlus className="h-5 w-5" />
-                  <span>Invite User</span>
-                </button>
-              )}
-              {isOwner && (
-                <button
-                  onClick={() => setShowDeleteModal(true)}
-                  className="btn-secondary flex items-center space-x-2 text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="h-5 w-5" />
-                  <span>Delete Organization</span>
-                </button>
-              )}
-            </div>
-          </div>
+<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
+  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+    {/* LEFT */}
+    <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+      <div className="bg-primary-100 p-3 sm:p-4 rounded-lg shrink-0">
+        <Building2 className="h-8 w-8 sm:h-10 sm:w-10 text-primary-600" />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2 mb-2 min-w-0">
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-900 break-words">
+            {organization.name}
+          </h1>
+
+          {isOwner && (
+            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded inline-flex items-center gap-1 shrink-0">
+              <Crown className="h-3 w-3" />
+              <span>Owner</span>
+            </span>
+          )}
         </div>
+
+        {organization.description && (
+          <p className="text-gray-600 mt-2 break-words">
+            {organization.description}
+          </p>
+        )}
+
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-sm text-gray-500">
+          <span className="inline-flex items-center gap-1">
+            <Users className="h-4 w-4" />
+            <span>
+              {orgUsers.length} {orgUsers.length === 1 ? "member" : "members"}
+            </span>
+          </span>
+
+          {organization.owner && (
+            <span className="inline-flex items-center gap-1 min-w-0">
+              <Crown className="h-4 w-4 shrink-0" />
+              <span className="truncate">
+                Owner: {organization.owner?.name || "N/A"}
+              </span>
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+
+    {/* RIGHT (Buttons) */}
+    <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 w-full lg:w-auto lg:justify-end">
+      {isAdminOrOwner && (
+        <button
+          onClick={() => setShowInviteModal(true)}
+          className="btn-primary inline-flex items-center justify-center gap-2 w-full sm:w-auto"
+        >
+          <UserPlus className="h-5 w-5" />
+          <span>Invite User</span>
+        </button>
+      )}
+
+      {isOwner && (
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="btn-secondary inline-flex items-center justify-center gap-2 w-full sm:w-auto text-red-600 hover:bg-red-50"
+        >
+          <Trash2 className="h-5 w-5" />
+          <span>Delete Organization</span>
+        </button>
+      )}
+    </div>
+  </div>
+</div>
 
         {/* Organization Members */}
         <div className="card">
