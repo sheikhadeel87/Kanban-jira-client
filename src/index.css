@@ -44,3 +44,36 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+/* Add to index.css */
+.ql-toolbar {
+  border-top: 1px solid #e5e7eb;
+  border-left: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  border-bottom: none;
+  background: #f9fafb;
+  padding: 8px;
+}
+
+.ql-container {
+  border-bottom: 1px solid #e5e7eb;
+  border-left: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  border-top: none;
+  font-size: 14px;
+}
+
+.ql-editor {
+  min-height: 150px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Hide image upload - not needed, we have Attachment field */
+.ql-toolbar .ql-image {
+  display: none !important;
+}
+
+/* Hide video upload too */
+.ql-toolbar .ql-video {
+  display: none !important;
+}

@@ -159,5 +159,12 @@ export const userAPI = {
   sendInvite: (data) => api.post('/users/invite', data),
 };
 
+export const commentAPI = {
+  getByTask: (taskId) => api.get(`/comments/task/${taskId}`),
+  create: (taskId, text) => api.post(`/comments/task/${taskId}`, { text }),
+  update: (commentId, text) => api.put(`/comments/${commentId}`, { text }),
+  delete: (commentId) => api.delete(`/comments/${commentId}`),
+};
+
 export default api;
 

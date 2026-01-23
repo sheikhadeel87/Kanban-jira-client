@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { MoreVertical, Edit, Trash2, User, Image as ImageIcon, File, Paperclip, AlertCircle, Calendar } from 'lucide-react';
+import DOMPurify from 'dompurify';
+import { MoreVertical, Edit, Trash2, User, Image as ImageIcon, File, Paperclip, AlertCircle, Calendar, MessageSquare } from 'lucide-react';
 
 const TaskCard = ({ task, onEdit, onDelete }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -17,20 +18,21 @@ const TaskCard = ({ task, onEdit, onDelete }) => {
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'todo':
-        return 'border-gray-300 bg-white';
-      case 'in_progress':
-        return 'border-blue-300 bg-blue-50';
-      case 'completed':
-        return 'border-green-300 bg-green-50';
-      default:
-        return 'border-gray-300 bg-white';
-    }
-  };
+  // const getStatusColor = (status) => {
+  //   switch (status) {
+  //     case 'todo':
+  //       return 'border-gray-300 bg-white';
+  //     case 'in_progress':
+  //       return 'border-blue-300 bg-blue-50';
+  //     case 'completed':
+  //       return 'border-green-300 bg-green-50';
+  //     default:
+  //       return 'border-gray-300 bg-white';
+  //   }
+  // };
 
   // Close dropdown when clicking outside
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -123,7 +125,7 @@ const TaskCard = ({ task, onEdit, onDelete }) => {
       style={style}
       {...attributes}
       {...listeners}
-      className={`bg-white rounded-xl p-4 shadow-sm border border-gray-200 cursor-move hover:shadow-lg transition-all duration-200 group ${getStatusColor(task.status)}`}
+      className={`bg-white rounded-xl p-4 shadow-sm border border-gray-200 cursor-move hover:shadow-lg transition-all duration-200 group `}
     >
       <div className="flex justify-between items-start mb-3">
         <h3 className="font-semibold text-gray-900 flex-1 text-base leading-tight pr-2">{task.title}</h3>
@@ -152,6 +154,13 @@ const TaskCard = ({ task, onEdit, onDelete }) => {
           {/* Dropdown Menu */}
           {showDropdown && (
             <div className="absolute right-0 top-9 bg-white border border-gray-200 rounded-xl shadow-xl z-20 min-w-[140px] py-1.5 overflow-hidden">
+             <button
+                onClick={(e) => handleActionClick(e, () => onEdit(task))}
+                className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 transition-colors"
+              >
+                <Edit className="h-4 w-4" />
+                <span>Add Comments</span>
+              </button>
               <button
                 onClick={(e) => handleActionClick(e, () => onEdit(task))}
                 className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 transition-colors"
@@ -171,8 +180,13 @@ const TaskCard = ({ task, onEdit, onDelete }) => {
         </div>
       </div>
       {task.description && (
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">{task.description}</p>
-      )}
+  <div 
+    className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed"
+    dangerouslySetInnerHTML={{ 
+      __html: DOMPurify.sanitize(task.description) 
+    }}
+  />
+)}
       
       {/* Priority and Due Date */}
       <div className="flex items-center gap-2 mb-3 flex-wrap">
