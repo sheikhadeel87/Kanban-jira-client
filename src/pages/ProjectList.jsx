@@ -96,7 +96,7 @@ const ProjectList = () => {
   };
 
   const canCreateProject = () => {
-    return user?.role === 'owner' || user?.role === 'admin';
+    return ['owner', 'admin', 'manager'].includes(user?.role);
   };
 
   return (

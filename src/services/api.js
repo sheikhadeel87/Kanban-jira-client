@@ -65,8 +65,11 @@ export const organizationAPI = {
   create: (data) => api.post('/organizations', data),
   getMy: () => api.get('/organizations/me'),
   getUsers: () => api.get('/organizations/users'),
-  invite: (email) => api.post('/organizations/invite', { email }),
+  invite: (email, role = 'member') => api.post('/organizations/invite', { email, role }),
   delete: (id) => api.delete(`/organizations/${id}`),
+  removeMember: (id, userId) => api.delete(`/organizations/${id}/members/${userId}`),
+  syncUserRole: (userId) => api.post(`/organizations/members/${userId}/sync-role`),
+  updateMember: (id, userId, data) => api.put(`/organizations/${id}/members/${userId}`, data),
 };
 
 // Project API (renamed from workspace)

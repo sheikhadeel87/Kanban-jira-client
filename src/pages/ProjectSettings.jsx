@@ -122,10 +122,7 @@ const ProjectSettings = () => {
       return false;
     }
     
-    // App admins can always manage projects
-    if (user.role === 'admin') {
-      return true;
-    }
+    if (['admin', 'manager'].includes(user.role)) return true;
     
     // Get user ID - getMe returns user with _id
     const userId = user._id || user.id;

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { enableNotification } from '../enableNotification';
 import { LogOut, LayoutDashboard, Users, FolderKanban, CheckSquare, Building2, ChevronDown, User as UserIcon, Menu, X } from 'lucide-react';
 
 const Layout = ({ children }) => {
@@ -8,12 +9,16 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const dropdownRef = useRef(null);
+  const desktopDropdownRef = useRef(null);
+  const mobileDropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (desktopDropdownRef.current && !desktopDropdownRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
+      }
+      if (mobileDropdownRef.current && !mobileDropdownRef.current.contains(event.target)) {
         setShowProfileDropdown(false);
       }
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
@@ -22,8 +27,12 @@ const Layout = ({ children }) => {
     };
     if (showProfileDropdown || showMobileMenu) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, [showProfileDropdown, showMobileMenu]);
 
   const handleLogout = () => {
@@ -124,7 +133,7 @@ const Layout = ({ children }) => {
 
             {/* Profile Dropdown - Desktop */}
             <div className="hidden md:flex items-center">
-              <div className="relative" ref={dropdownRef}>
+              <div className="relative" ref={desktopDropdownRef}>
                 <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                   className="flex items-center space-x-2 px-2 lg:px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -140,7 +149,7 @@ const Layout = ({ children }) => {
                 </button>
 
                 {showProfileDropdown && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[100]">
                     <div className="px-4 py-3 border-b border-gray-100">
                       <div className="text-sm font-medium text-gray-900">{user?.name}</div>
                       <div className="text-xs text-gray-500 truncate">{user?.email}</div>
@@ -150,8 +159,38 @@ const Layout = ({ children }) => {
                         </span>
                       )}
                     </div>
+                    {/* <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowProfileDropdown(false);
+                        handleLogout();
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors cursor-pointer touch-manipulation"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Logout</span>
+                    </button> */}
+                    {/* Enable Push Notifications */}
                     <button
-                      onClick={handleLogout}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        enableNotification();
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <span>Enable Push Notifications</span>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowProfileDropdown(false);
+                        handleLogout();
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
                       className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                     >
                       <LogOut className="h-4 w-4" />
@@ -163,7 +202,7 @@ const Layout = ({ children }) => {
             </div>
 
             {/* Profile Avatar - Mobile Only */}
-            <div className="md:hidden relative" ref={dropdownRef}>
+            <div className="md:hidden relative" ref={mobileDropdownRef}>
               <button
                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -174,7 +213,7 @@ const Layout = ({ children }) => {
               </button>
 
               {showProfileDropdown && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[100]">
                   <div className="px-4 py-3 border-b border-gray-100">
                     <div className="text-sm font-medium text-gray-900">{user?.name}</div>
                     <div className="text-xs text-gray-500 truncate">{user?.email}</div>
@@ -185,8 +224,14 @@ const Layout = ({ children }) => {
                     )}
                   </div>
                   <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowProfileDropdown(false);
+                      handleLogout();
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors cursor-pointer touch-manipulation"
                   >
                     <LogOut className="h-4 w-4" />
                     <span>Logout</span>
