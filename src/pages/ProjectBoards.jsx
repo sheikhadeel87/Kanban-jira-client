@@ -55,7 +55,7 @@ const BoardColumn = ({ board, boardTasks, children, isProjectMember, isProjectAd
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xl font-bold tracking-tight drop-shadow-sm">{board.title}</h2>
-            {(isProjectAdmin || (board.owner?._id || board.owner) === (user?._id || user?.id) || user?.role === 'admin' || user?.role === 'owner') && (
+            {(isProjectAdmin || (board.owner?._id || board.owner) === (user?._id || user?.id) || ['admin', 'owner', 'manager'].includes(user?.role)) && (
               <div className="flex space-x-1.5">
                 <button
                   onClick={() => onEditBoard(board)}
@@ -386,7 +386,7 @@ const ProjectBoards = () => {
 
   const isProjectMember = () => {
     if (!project || !user) return false;
-    if (user.role === 'admin' || user.role === 'owner') return true;
+    if (['admin', 'owner', 'manager'].includes(user.role)) return true;
     
     const userId = user._id || user.id;
     if (!userId) return false;
@@ -413,7 +413,7 @@ const ProjectBoards = () => {
 
   const isProjectAdmin = () => {
     if (!project || !user) return false;
-    if (user.role === 'admin' || user.role === 'owner') return true;
+    if (['admin', 'owner', 'manager'].includes(user.role)) return true;
     
     const userId = user._id || user.id;
     if (!userId) return false;
@@ -439,7 +439,7 @@ const ProjectBoards = () => {
   };
 
   const canCreateBoard = () => {
-    return user?.role === 'owner' || user?.role === 'admin' || isProjectAdmin();
+    return ['owner', 'admin', 'manager'].includes(user?.role) || isProjectAdmin();
   };
 
   if (loading) {
