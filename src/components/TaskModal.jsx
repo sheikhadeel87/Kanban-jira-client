@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { taskAPI, boardAPI, projectAPI, commentAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { X, User, XCircle, Settings, Paperclip, File, MessageSquare } from 'lucide-react';
+import { getUserInitials, getUserAvatarColor } from '../utils/userDisplay';
 
 const TaskModal = ({ boardId, task, onClose, onSave }) => {
   const navigate = useNavigate();
@@ -26,6 +27,115 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
   const [comments, setComments] = useState([]);
   const [newCommentText, setNewCommentText] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+
+  // users for mention dropdown — only task assignees (comments are between people assigned to this task)
+  const mentionUsers = useMemo(() => {
+    if (!task) return [];
+    const assigneeIds = (formData.assignedTo && formData.assignedTo.length > 0)
+      ? formData.assignedTo
+      : (task.assignedTo || []).map((u) => String(u._id ?? u.id ?? u));
+    if (assigneeIds.length === 0) return [];
+
+    const projectUserById = new Map();
+    projectMembers.forEach((m) => {
+      const u = m.user || m;
+      if (u && (u._id || u.id)) projectUserById.set(String(u._id || u.id), u);
+    });
+
+    const byId = new Map();
+    assigneeIds.forEach((id) => {
+      const sid = String(id);
+      if (byId.has(sid)) return;
+      const fromTask = (task.assignedTo || []).find((u) => String(u._id ?? u.id ?? u) === sid);
+      const resolved =
+        typeof fromTask === 'object' && fromTask !== null && (fromTask.name != null || fromTask.email != null)
+          ? fromTask
+          : projectUserById.get(sid);
+      byId.set(sid, {
+        _id: resolved?._id ?? id,
+        name: resolved?.name ?? '',
+        email: resolved?.email ?? '',
+      });
+    });
+    return Array.from(byId.values());
+  }, [task, formData.assignedTo, projectMembers]);
+
+  const filteredMentionUsers = useMemo(() => {
+    const q = mentionQuery.toLowerCase();
+    return mentionUsers
+      .filter((u) => {
+        const name = (u?.name || "").toLowerCase();
+        const email = (u?.email || "").toLowerCase();
+        return name.includes(q) || email.includes(q);
+      })
+      .slice(0, 8);
+  }, [mentionUsers, mentionQuery]);
+
+  const renderCommentWithMentions = (text) => {
+    const parts = [];
+    const regex = /@\[(.*?)\]\((.*?)\)/g; // @[Name](id)
+    let lastIndex = 0;
+    let match;
+  
+    while ((match = regex.exec(text)) !== null) {
+      const [full, name, id] = match;
+      const start = match.index;
+  
+      // normal text before mention
+      if (start > lastIndex) {
+        parts.push(text.slice(lastIndex, start));
+      }
+  
+      // mention chip/text
+      parts.push(
+        <span
+          key={`${id}-${start}`}
+          className="text-blue-600 font-semibold"
+        >
+          @{name}
+        </span>
+      );
+  
+      lastIndex = start + full.length;
+    }
+  
+    // remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+  
+    return parts;
+  };  
+
+  const handleCommentChange = (e) => {
+    const val = e.target.value;
+    setNewCommentText(val);
+
+    const match = val.match(/(?:^|\s)@([a-zA-Z0-9_]*)$/);
+    if (match) {
+      setMentionQuery(match[1] || "");
+      setShowMentions(true);
+    } else {
+      setShowMentions(false);
+      setMentionQuery("");
+    }
+  };
+
+  const insertMention = (user) => {
+    const token = `@[${user.name}](${user._id})`;
+
+    const next = newCommentText.replace(/(?:^|\s)@([a-zA-Z0-9_]*)$/, (m) => {
+      const leadingSpace = m.startsWith(" ") ? " " : "";
+      return `${leadingSpace}${token} `;
+    });
+
+    setNewCommentText(next);
+    setShowMentions(false);
+    setMentionQuery("");
+  };
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -189,32 +299,6 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
       });
       return member?.user?.name || 'Unknown';
     });
-  };
-
-  const getUserInitials = (user) => {
-    if (!user) return '?';
-    const name = user.name || user.email || '';
-    const parts = name.split(' ');
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return name[0]?.toUpperCase() || '?';
-  };
-
-  const getUserAvatarColor = (userId) => {
-    const colors = [
-      'bg-gradient-to-br from-blue-500 to-blue-600',
-      'bg-gradient-to-br from-purple-500 to-purple-600',
-      'bg-gradient-to-br from-pink-500 to-pink-600',
-      'bg-gradient-to-br from-green-500 to-green-600',
-      'bg-gradient-to-br from-orange-500 to-orange-600',
-      'bg-gradient-to-br from-indigo-500 to-indigo-600',
-      'bg-gradient-to-br from-teal-500 to-teal-600',
-      'bg-gradient-to-br from-rose-500 to-rose-600',
-    ];
-    if (!userId) return colors[0];
-    const index = parseInt(String(userId).slice(-1), 16) % colors.length;
-    return colors[index] || colors[0];
   };
 
   const formatTimeAgo = (date) => {
@@ -572,7 +656,7 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
                           {formatTimeAgo(comment.createdAt)}
                         </span>
                       </div>
-                      <p className="text-xs sm:text-sm text-gray-700 break-words">{comment.text}</p>
+                      <p className="text-xs sm:text-sm text-gray-700 break-words">{renderCommentWithMentions(comment.text)}</p>
                     </div>
                   </div>
                 ))
@@ -587,33 +671,57 @@ const TaskModal = ({ boardId, task, onClose, onSave }) => {
 
             {/* Comment Input */}
             <div className="p-3 sm:p-4 border-t border-gray-200 bg-white flex-shrink-0">
-              <div className="space-y-2 sm:space-y-3">
-                <textarea
-                  className="w-full border border-gray-300 rounded-lg p-2 sm:p-2.5 md:p-3 text-xs sm:text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  rows="2"
-                  placeholder="Add a comment..."
-                  value={newCommentText}
-                  onChange={(e) => setNewCommentText(e.target.value)}
-                />
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <button
-                    type="button"
-                    onClick={handleCreateComment}
-                    disabled={!newCommentText.trim() || commentLoading || !task}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {commentLoading ? 'Sending...' : 'Send'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setNewCommentText('')}
-                    className="sm:flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-xs sm:text-sm font-medium transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
+  <div className="space-y-2 sm:space-y-3">
+    <div className="relative">
+      {showMentions && filteredMentionUsers.length > 0 && (
+        <div className="absolute left-0 right-0 bottom-full mb-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-auto">
+          {filteredMentionUsers.map((u) => (
+            <button
+              key={u._id}
+              type="button"
+              onMouseDown={(e) => e.preventDefault()} // keep textarea focus
+              onClick={() => insertMention(u)}
+              className="w-full text-left px-3 py-2 hover:bg-gray-50 flex flex-col"
+            >
+              <span className="text-sm font-semibold text-gray-900">
+                {u.name}
+              </span>
+              <span className="text-xs text-gray-500">
+                {u.email}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    <textarea
+      className="w-full border border-gray-300 rounded-lg p-2 sm:p-2.5 md:p-3 text-xs sm:text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      rows="2"
+      placeholder="Add a comment..."
+      value={newCommentText}
+      onChange={handleCommentChange}
+    />
+    </div>
+
+    <div className="flex flex-col sm:flex-row gap-2">
+      <button
+        type="button"
+        onClick={handleCreateComment}
+        disabled={!newCommentText.trim() || commentLoading || !task}
+        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {commentLoading ? "Sending..." : "Send"}
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setNewCommentText("")}
+        className="sm:flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-xs sm:text-sm font-medium transition-colors"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
           </div>
         </div>
       </div>

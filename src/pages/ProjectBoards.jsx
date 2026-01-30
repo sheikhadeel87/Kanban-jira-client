@@ -8,6 +8,7 @@ import { Plus, ArrowLeft, FolderKanban, Edit, Trash2, Settings, User } from 'luc
 import Layout from '../components/Layout';
 import TaskCard from '../components/TaskCard';
 import TaskModal from '../components/TaskModal';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 
 // Droppable Board Column Component
@@ -446,7 +447,7 @@ const ProjectBoards = () => {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          <LoadingSpinner />
         </div>
       </Layout>
     );

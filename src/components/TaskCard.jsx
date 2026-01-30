@@ -3,6 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import DOMPurify from 'dompurify';
 import { MoreVertical, Edit, Trash2, User, Image as ImageIcon, File, Paperclip, AlertCircle, Calendar, MessageSquare } from 'lucide-react';
+import { getUserInitials, getUserAvatarColor } from '../utils/userDisplay';
 
 const TaskCard = ({ task, onEdit, onDelete }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -61,34 +62,6 @@ const TaskCard = ({ task, onEdit, onDelete }) => {
     e.preventDefault();
     setShowDropdown(false);
     callback();
-  };
-
-  // Get user initials for avatar
-  const getUserInitials = (user) => {
-    if (!user) return '?';
-    const name = user.name || user.email || '';
-    const parts = name.split(' ');
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return name[0]?.toUpperCase() || '?';
-  };
-
-  // Get user avatar color
-  const getUserAvatarColor = (userId) => {
-    const colors = [
-      'bg-gradient-to-br from-blue-500 to-blue-600',
-      'bg-gradient-to-br from-purple-500 to-purple-600',
-      'bg-gradient-to-br from-pink-500 to-pink-600',
-      'bg-gradient-to-br from-green-500 to-green-600',
-      'bg-gradient-to-br from-orange-500 to-orange-600',
-      'bg-gradient-to-br from-indigo-500 to-indigo-600',
-      'bg-gradient-to-br from-teal-500 to-teal-600',
-      'bg-gradient-to-br from-rose-500 to-rose-600',
-    ];
-    if (!userId) return colors[0];
-    const index = parseInt(String(userId).slice(-1), 16) % colors.length;
-    return colors[index] || colors[0];
   };
 
   // Priority colors

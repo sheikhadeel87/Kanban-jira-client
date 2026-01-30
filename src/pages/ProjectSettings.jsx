@@ -4,6 +4,7 @@ import { projectAPI, organizationAPI, teamAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Users, UserPlus, UserMinus, Crown, Shield, Search, Edit, Trash2 } from 'lucide-react';
 import Layout from '../components/Layout';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 
 const ProjectSettings = () => {
@@ -183,7 +184,7 @@ const ProjectSettings = () => {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          <LoadingSpinner />
         </div>
       </Layout>
     );

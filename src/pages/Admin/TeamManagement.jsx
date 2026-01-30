@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { teamAPI, boardAPI, userAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Trash2, Users } from 'lucide-react';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const TeamManagement = () => {
   const [teams, setTeams] = useState([]);
@@ -80,7 +81,7 @@ const TeamManagement = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <LoadingSpinner />
       </div>
     );
   }

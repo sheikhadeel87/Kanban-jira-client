@@ -58,10 +58,18 @@ Organization
 
 ### Admin Features
 - **Admin Dashboard**: Overview of all projects, boards, tasks, and users
+- **Admin Home**: Dashboard landing
 - **Project Management**: Create, edit, and delete projects
+- **Workspace Management**: Create and manage workspaces (project-level)
 - **Board Management**: Manage all boards across projects
 - **Task Management**: View and manage all tasks
+- **Team Management**: Manage board teams and members
 - **User Management**: View all users in the organization
+
+### Push Notifications
+- **Web push (FCM)**: Task assigned, task updated, status changed
+- **In-app notifications**: Bell icon in layout; list and mark read via `/api/notifications`
+- **Firebase**: `firebase.js`, `enableNotification.js`, `public/firebase-messaging-sw.js`; token saved to `/api/push/register`
 
 ## 🛠️ Tech Stack
 
@@ -74,6 +82,7 @@ Organization
 - **@dnd-kit**: Drag and drop functionality
 - **React Hot Toast**: Toast notifications
 - **Lucide React**: Icon library
+- **Firebase (FCM)**: Web push notifications
 
 ### Backend
 - **Node.js**: Runtime environment
@@ -216,14 +225,21 @@ kanban-jira/
 │   └── package.json
 │
 └── ui/
+    ├── public/
+    │   └── firebase-messaging-sw.js   # FCM service worker
     ├── src/
-    │   ├── components/         # Reusable components
-    │   │   ├── Layout.jsx     # Main layout
+    │   ├── components/
+    │   │   ├── Layout.jsx
+    │   │   ├── LoadingSpinner.jsx
     │   │   ├── ProtectedRoute.jsx
-    │   │   ├── TaskCard.jsx   # Draggable task card
-    │   │   └── TaskModal.jsx  # Task create/edit modal
+    │   │   ├── SkeletonLoader.jsx
+    │   │   ├── TaskCard.jsx
+    │   │   └── TaskModal.jsx
     │   ├── context/
-    │   │   └── AuthContext.jsx # Auth state management
+    │   │   └── AuthContext.jsx
+    │   ├── hooks/
+    │   │   ├── useCrudList.js      # Admin CRUD (projects, boards, workspaces)
+    │   │   └── useProjectsWithStats.js
     │   ├── pages/
     │   │   ├── Login.jsx
     │   │   ├── Register.jsx
@@ -232,21 +248,31 @@ kanban-jira/
     │   │   ├── ProjectBoards.jsx
     │   │   ├── ProjectSettings.jsx
     │   │   ├── BoardView.jsx
+    │   │   ├── TeamMembers.jsx
     │   │   ├── User/
     │   │   │   └── UserDashboard.jsx
     │   │   └── Admin/
     │   │       ├── AdminDashboard.jsx
+    │   │       ├── AdminHome.jsx
     │   │       ├── ProjectManagement.jsx
+    │   │       ├── WorkspaceManagement.jsx
     │   │       ├── BoardManagement.jsx
-    │   │       └── TaskManagement.jsx
+    │   │       ├── TaskManagement.jsx
+    │   │       └── TeamManagement.jsx
     │   ├── services/
-    │   │   └── api.js         # API service layer
-    │   ├── App.jsx            # Main app with routing
-    │   ├── main.jsx           # Entry point
-    │   └── index.css          # Global styles
+    │   │   ├── api.js
+    │   │   └── pushService.js     # Client push helpers
+    │   ├── utils/
+    │   │   ├── userDisplay.js     # Avatar/initials helpers
+    │   │   └── withToast.js       # Promise + toast wrapper
+    │   ├── enableNotification.js # FCM token + register with backend
+    │   ├── firebase.js            # Firebase app + messaging
+    │   ├── App.jsx
+    │   ├── main.jsx
+    │   └── index.css
     ├── index.html
     ├── package.json
-    ├── vite.config.js
+    ├── vite.config.js            # server.port 3000, /api proxy to backend
     └── tailwind.config.js
 ```
 
@@ -388,6 +414,7 @@ FRONTEND_URL=http://localhost:3000
 ### Frontend (.env)
 ```env
 VITE_API_URL=http://localhost:5005/api
+VITE_FB_VAPID_KEY=your-firebase-vapid-key   # Optional; for web push (FCM)
 ```
 
 ## 🚀 Deployment
@@ -419,4 +446,4 @@ For issues and questions, please open an issue on the repository.
 
 ---
 
-**Built with ❤️ using React, Node.js, and MongoDB**
+**Built using React, Node.js, and MongoDB**

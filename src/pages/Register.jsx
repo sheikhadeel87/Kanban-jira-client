@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { UserPlus, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Register = () => {
   const [searchParams] = useSearchParams();
@@ -191,7 +192,7 @@ const Register = () => {
                 className="btn-primary w-full flex justify-center items-center"
               >
                 {loading ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <LoadingSpinner size="sm" variant="white" />
                 ) : (
                   'Create Account'
                 )}
