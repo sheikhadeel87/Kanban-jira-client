@@ -2,13 +2,19 @@ import { initializeApp } from "firebase/app";
 import { getMessaging, getToken } from "firebase/messaging";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBduraiUo1KRaE6Ze4z6XZNMINm79kqZjo",
-  authDomain: "kanban-jira-c5bdd.firebaseapp.com",
-  projectId: "kanban-jira-c5bdd",
-  storageBucket: "kanban-jira-c5bdd.firebasestorage.app",
-  messagingSenderId: "606377367576",
-  appId: "1:606377367576:web:6239a0dc0ad071a4bc4b6d",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
+
+if (!firebaseConfig.apiKey) {
+  console.error(
+    "[Firebase] VITE_FIREBASE_API_KEY is missing. Check ui/.env and restart the dev server (npm run dev)."
+  );
+}
 
 const app = initializeApp(firebaseConfig);
 export const messaging = getMessaging(app);

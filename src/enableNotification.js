@@ -12,8 +12,7 @@ export const enableNotification = async () => {
     }
 
     const vapidKey =
-      import.meta.env.VITE_FB_VAPID_KEY ||
-      "BH7VzKvZ79IAujnrQmNu1V-l0fHJhJIRpg1E6QvK8XK4YL2LtCzGaiSlei7wZ9bR9Xk0kALYj-G-px2jRlT13Pg";
+      import.meta.env.VITE_FB_VAPID_KEY || "your-firebase-vapid-key";
 
     const token = await getToken(messaging, {
       vapidKey,
