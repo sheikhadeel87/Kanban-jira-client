@@ -12,6 +12,7 @@ import BoardView from './pages/BoardView';
 import TeamMembers from './pages/TeamMembers';
 import Organization from './pages/Organization';
 import ProtectedRoute from './components/ProtectedRoute';
+import LoadingSpinner from './components/LoadingSpinner';
 
 // Wrapper to handle invite token - always show Login/Register if inviteToken is present
 const AuthRoute = ({ children, user }) => {
@@ -37,7 +38,7 @@ function AppRoutes() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <LoadingSpinner />
       </div>
     );
   }

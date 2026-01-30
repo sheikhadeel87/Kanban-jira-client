@@ -3,9 +3,7 @@ import { messaging } from "./firebase";
 
 export const enableNotification = async () => {
   try {
-    // Register service worker first (FIX: swReg was undefined)
     const swReg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-    
     const permission = await Notification.requestPermission();
 
     if (permission !== "granted") {
@@ -13,11 +11,12 @@ export const enableNotification = async () => {
       return null;
     }
 
-    // Get VAPID key - use hardcoded if env is not set
-    const vapidKey = import.meta.env.VITE_FB_VAPID_KEY || "BH7VzKvZ79IAujnrQmNu1V-l0fHJhJIRpg1E6QvK8XK4YL2LtCzGaiSlei7wZ9bR9Xk0kALYj-G-px2jRlT13Pg";
-    
+    const vapidKey =
+      import.meta.env.VITE_FB_VAPID_KEY ||
+      "BH7VzKvZ79IAujnrQmNu1V-l0fHJhJIRpg1E6QvK8XK4YL2LtCzGaiSlei7wZ9bR9Xk0kALYj-G-px2jRlT13Pg";
+
     const token = await getToken(messaging, {
-      vapidKey: vapidKey,
+      vapidKey,
       serviceWorkerRegistration: swReg,
     });
 
@@ -30,15 +29,35 @@ export const enableNotification = async () => {
     console.log("🔥 FCM TOKEN:", token);
     console.log("FCM TOKEN length:", token?.length);
     console.log("FCM TOKEN preview:", token.slice(0, 30));
-    
-    // TODO: Save token to backend/database here
-    // await api.post('/notifications/save-token', { token });
-    
-    return token; // Return token so it can be used
+
+    // ✅ Save token to backend
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+    const authToken = localStorage.getItem("token");
+
+    const res = await fetch(`${API_BASE}/push/register`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json" ,
+        "Authorization": `Bearer ${authToken}`,
+      },
+      // credentials: "include",
+       body: JSON.stringify({ token, platform: "web" }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      console.error("❌ Token save failed:", res.status, json);
+      alert(`Token save failed: ${json?.error || res.statusText}`);
+      return null;
+    }
+
+    console.log("✅ Token saved to backend:", json);
+
+    return token;
   } catch (err) {
     console.error("FCM Error:", err);
     alert("Failed to enable notifications: " + err.message);
     return null;
   }
 };
-

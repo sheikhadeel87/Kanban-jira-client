@@ -1,62 +1,28 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { projectAPI, userAPI } from '../../services/api';
-import toast from 'react-hot-toast';
+import { projectAPI } from '../../services/api';
 import { Plus, Building2, Edit, Trash2, Users, Settings } from 'lucide-react';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { useCrudList } from '../../hooks/useCrudList';
 
 const ProjectManagement = () => {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingProject, setEditingProject] = useState(null);
   const [formData, setFormData] = useState({ name: '', description: '' });
+  const crud = useCrudList({
+    fetchAll: projectAPI.getAll,
+    create: projectAPI.create,
+    update: projectAPI.update,
+    delete: projectAPI.delete,
+    entityName: 'Project',
+    deleteConfirmMessage: 'Are you sure you want to delete this project? This will delete all boards and tasks in it.',
+    onSuccess: () => setFormData({ name: '', description: '' }),
+  });
+  const { items: projects, loading, editingItem: editingProject, setEditingItem: setEditingProject, showModal, setShowModal, handleSubmit: crudSubmit, handleDelete } = crud;
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  const fetchProjects = async () => {
-    try {
-      const response = await projectAPI.getAll();
-      setProjects(response.data);
-    } catch (error) {
-      toast.error('Failed to load projects');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      if (editingProject) {
-        await projectAPI.update(editingProject._id, formData);
-        toast.success('Project updated successfully');
-      } else {
-        await projectAPI.create(formData);
-        toast.success('Project created successfully');
-      }
-      setShowModal(false);
-      setEditingProject(null);
-      setFormData({ name: '', description: '' });
-      fetchProjects();
-    } catch (error) {
-      toast.error(error.response?.data?.msg || 'Operation failed');
-    }
+    crudSubmit(formData);
   };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this project? This will delete all boards and tasks in it.')) return;
-    try {
-      await projectAPI.delete(id);
-      toast.success('Project deleted successfully');
-      fetchProjects();
-    } catch (error) {
-      toast.error(error.response?.data?.msg || 'Failed to delete project');
-    }
-  };
-
   const handleEdit = (project) => {
     setEditingProject(project);
     setFormData({ name: project.name, description: project.description || '' });
@@ -66,7 +32,7 @@ const ProjectManagement = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <LoadingSpinner />
       </div>
     );
   }

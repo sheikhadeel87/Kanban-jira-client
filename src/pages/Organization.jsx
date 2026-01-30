@@ -4,6 +4,7 @@ import { organizationAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { Building2, Users, UserPlus, Trash2, Mail, Shield, Crown, User, Edit2, Check, X} from 'lucide-react';
 import Layout from '../components/Layout';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Organization = () => {
   const { user } = useAuth();
@@ -181,7 +182,7 @@ const Organization = () => {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          <LoadingSpinner />
         </div>
       </Layout>
     );

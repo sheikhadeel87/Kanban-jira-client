@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { LogIn, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Login = () => {
   const [searchParams] = useSearchParams();
@@ -132,7 +133,7 @@ const Login = () => {
                 className="btn-primary w-full flex justify-center items-center"
               >
                 {loading ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <LoadingSpinner size="sm" variant="white" />
                 ) : (
                   'Sign in'
                 )}

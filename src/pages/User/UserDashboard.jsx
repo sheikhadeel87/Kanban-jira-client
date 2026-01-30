@@ -1,64 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { projectAPI, boardAPI, taskAPI } from '../../services/api';
+import { projectAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import { Building2, ArrowRight, Plus, Users, Search, X, FolderKanban, CheckSquare, Settings } from 'lucide-react';
 import Layout from '../../components/Layout';
 import SkeletonLoader from '../../components/SkeletonLoader';
+import { useProjectsWithStats } from '../../hooks/useProjectsWithStats';
+import { enableNotification } from '../../enableNotification';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState([]);
-  const [projectsWithStats, setProjectsWithStats] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { projectsWithStats, loading, refetch } = useProjectsWithStats();
   const [showPanel, setShowPanel] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({ name: '', description: '' });
-
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  const fetchProjects = async () => {
-    try {
-      const response = await projectAPI.getAll();
-      const projectsData = response.data;
-      setProjects(projectsData);
-      
-      const projectsWithStatsData = await Promise.all(
-        projectsData.map(async (project) => {
-          try {
-            const boardsRes = await boardAPI.getByProject(project._id);
-            const boards = boardsRes.data || [];
-            let totalTasks = 0;
-            let completedTasks = 0;
-            
-            for (const board of boards) {
-              try {
-                const tasksRes = await taskAPI.getByBoard(board._id);
-                const tasks = tasksRes.data || [];
-                totalTasks += tasks.length;
-                completedTasks += tasks.filter(t => t.status === 'completed').length;
-              } catch (err) {}
-            }
-            
-            return {
-              ...project,
-              stats: { boards: boards.length, tasks: totalTasks, completed: completedTasks },
-            };
-          } catch (err) {
-            return { ...project, stats: { boards: 0, tasks: 0, completed: 0 } };
-          }
-        })
-      );
-      
-      setProjectsWithStats(projectsWithStatsData);
-    } catch (error) {
-      toast.error('Failed to load projects');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filteredProjects = projectsWithStats.filter((project) =>
     project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -72,11 +27,15 @@ const UserDashboard = () => {
       toast.success('Project created successfully');
       setShowPanel(false);
       setFormData({ name: '', description: '' });
-      fetchProjects();
+      refetch();
     } catch (error) {
       toast.error(error.response?.data?.msg || 'Failed to create project');
     }
   };
+
+  useEffect(() => {
+    enableNotification();
+  }, []);
 
   return (
     <Layout>

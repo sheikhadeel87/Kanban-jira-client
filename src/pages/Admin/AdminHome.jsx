@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { projectAPI, boardAPI, taskAPI, userAPI } from '../../services/api';
 import { Building2, FolderKanban, CheckSquare, Users, User } from 'lucide-react';
 import toast from 'react-hot-toast';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const AdminHome = () => {
   const [stats, setStats] = useState({
@@ -55,7 +56,7 @@ const AdminHome = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <LoadingSpinner />
       </div>
     );
   }

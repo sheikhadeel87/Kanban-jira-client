@@ -1,72 +1,38 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { projectAPI, userAPI } from '../../services/api';
-import toast from 'react-hot-toast';
+import { projectAPI } from '../../services/api';
 import { Plus, Building2, Edit, Trash2, Users, Settings } from 'lucide-react';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { useCrudList } from '../../hooks/useCrudList';
 
-const ProjectManagement = () => {
+const WorkspaceManagement = () => {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingProject, setEditingProject] = useState(null);
   const [formData, setFormData] = useState({ name: '', description: '' });
+  const crud = useCrudList({
+    fetchAll: projectAPI.getAll,
+    create: projectAPI.create,
+    update: projectAPI.update,
+    delete: projectAPI.delete,
+    entityName: 'Workspace',
+    deleteConfirmMessage: 'Are you sure you want to delete this workspace? This will delete all boards and tasks in it.',
+    onSuccess: () => setFormData({ name: '', description: '' }),
+  });
+  const { items: workspaces, loading, editingItem: editingWorkspace, setEditingItem: setEditingWorkspace, showModal, setShowModal, handleSubmit: crudSubmit, handleDelete } = crud;
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  const fetchProjects = async () => {
-    try {
-      const response = await projectAPI.getAll();
-      setProjects(response.data);
-    } catch (error) {
-      toast.error('Failed to load projects');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      if (editingProject) {
-        await projectAPI.update(editingProject._id, formData);
-        toast.success('Project updated successfully');
-      } else {
-        await projectAPI.create(formData);
-        toast.success('Project created successfully');
-      }
-      setShowModal(false);
-      setEditingProject(null);
-      setFormData({ name: '', description: '' });
-      fetchProjects();
-    } catch (error) {
-      toast.error(error.response?.data?.msg || 'Operation failed');
-    }
+    crudSubmit(formData);
   };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this project? This will delete all boards and tasks in it.')) return;
-    try {
-      await projectAPI.delete(id);
-      toast.success('Project deleted successfully');
-      fetchProjects();
-    } catch (error) {
-      toast.error(error.response?.data?.msg || 'Failed to delete project');
-    }
-  };
-
-  const handleEdit = (project) => {
-    setEditingProject(project);
-    setFormData({ name: project.name, description: project.description || '' });
+  const handleEdit = (workspace) => {
+    setEditingWorkspace(workspace);
+    setFormData({ name: workspace.name, description: workspace.description || '' });
     setShowModal(true);
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <LoadingSpinner />
       </div>
     );
   }
@@ -75,52 +41,52 @@ const ProjectManagement = () => {
     <div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Project Management</h1>
-          <p className="mt-2 text-gray-600">Create and manage projects</p>
+          <h1 className="text-3xl font-bold text-gray-900">Workspace Management</h1>
+          <p className="mt-2 text-gray-600">Create and manage workspaces</p>
         </div>
         <button
           onClick={() => {
             setShowModal(true);
-            setEditingProject(null);
+            setEditingWorkspace(null);
             setFormData({ name: '', description: '' });
           }}
           className="btn-primary flex items-center space-x-2"
         >
           <Plus className="h-5 w-5" />
-          <span>Create Project</span>
+          <span>Create Workspace</span>
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map((project) => (
-          <div key={project._id} className="card hover:shadow-lg transition-shadow">
+        {workspaces.map((workspace) => (
+          <div key={workspace._id} className="card hover:shadow-lg transition-shadow">
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center space-x-3">
                 <div className="bg-primary-100 p-3 rounded-lg">
                   <Building2 className="h-6 w-6 text-primary-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900">{project.name}</h3>
-                  <p className="text-sm text-gray-500">Created by: {project.createdBy?.name}</p>
+                  <h3 className="text-xl font-semibold text-gray-900">{workspace.name}</h3>
+                  <p className="text-sm text-gray-500">Created by: {workspace.createdBy?.name}</p>
                 </div>
               </div>
               <div className="flex space-x-2">
                 <button
-                  onClick={() => navigate(`/project/${project._id}/boards`)}
+                  onClick={() => navigate(`/project/${workspace._id}/boards`)}
                   className="p-2 text-gray-600 hover:bg-gray-100 rounded"
-                  title="View Project"
+                  title="View Workspace"
                 >
                   <Settings className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => handleEdit(project)}
+                  onClick={() => handleEdit(workspace)}
                   className="p-2 text-blue-600 hover:bg-blue-50 rounded"
                   title="Edit"
                 >
                   <Edit className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => handleDelete(project._id)}
+                  onClick={() => handleDelete(workspace._id)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded"
                   title="Delete"
                 >
@@ -128,11 +94,11 @@ const ProjectManagement = () => {
                 </button>
               </div>
             </div>
-            <p className="text-gray-600 mb-4">{project.description || 'No description'}</p>
+            <p className="text-gray-600 mb-4">{workspace.description || 'No description'}</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
               <div className="flex items-center space-x-1">
                 <Users className="h-4 w-4" />
-                <span>{project.members?.length || 0} members</span>
+                <span>{workspace.members?.length || 0} members</span>
               </div>
             </div>
           </div>
@@ -143,7 +109,7 @@ const ProjectManagement = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h2 className="text-2xl font-bold mb-4">
-              {editingProject ? 'Edit Project' : 'Create Project'}
+              {editingWorkspace ? 'Edit Workspace' : 'Create Workspace'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -167,13 +133,13 @@ const ProjectManagement = () => {
               </div>
               <div className="flex space-x-3">
                 <button type="submit" className="btn-primary flex-1">
-                  {editingProject ? 'Update' : 'Create'}
+                  {editingWorkspace ? 'Update' : 'Create'}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
-                    setEditingProject(null);
+                    setEditingWorkspace(null);
                   }}
                   className="btn-secondary flex-1"
                 >
@@ -188,5 +154,4 @@ const ProjectManagement = () => {
   );
 };
 
-export default ProjectManagement;
-
+export default WorkspaceManagement;

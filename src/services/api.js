@@ -169,5 +169,13 @@ export const commentAPI = {
   delete: (commentId) => api.delete(`/comments/${commentId}`),
 };
 
+export const notificationAPI = {
+  getAll: () => api.get('/notifications'),
+  getUnreadCount: () => api.get('/notifications/unread-count'),
+  create: (data) => api.post('/notifications', data),
+  markAsRead: (id) => api.patch(`/notifications/${id}/read`),
+  markAllAsRead: () => api.patch('/notifications/read-all'),
+};
+
 export default api;
 
