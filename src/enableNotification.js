@@ -3,6 +3,10 @@ import { messaging } from "./firebase";
 
 export const enableNotification = async () => {
   try {
+    if (!messaging) {
+      console.error("[Firebase] Messaging not available");
+      return null;
+    }
     const swReg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
     const permission = await Notification.requestPermission();
 

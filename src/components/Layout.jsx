@@ -64,6 +64,7 @@ const Layout = ({ children }) => {
   }, [user]);
 
   useEffect(() => {
+    if (!messaging) return;
     const unsub = onMessage(messaging, async (payload) => {
       try {
         await notificationAPI.create({

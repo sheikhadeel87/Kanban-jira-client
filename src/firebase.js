@@ -17,7 +17,8 @@ if (!firebaseConfig.apiKey) {
 }
 
 const app = initializeApp(firebaseConfig);
-export const messaging = getMessaging(app);
+export const messaging = typeof window !== 'undefined' ? getMessaging(app) : null;
+
 
 export const getRealFcmToken = async () => {
   const swReg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
