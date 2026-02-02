@@ -2,11 +2,11 @@ importScripts("https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js
 importScripts("https://www.gstatic.com/firebasejs/10.12.4/firebase-messaging-compat.js");
 
 firebase.initializeApp({
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
+  apiKey: "AIzaSyBduraiUo1KRaE6Ze4z6XZNMINm79kqZjo",
+  authDomain: "kanban-jira-c5bdd.firebaseapp.com",
   projectId: "kanban-jira-c5bdd",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  messagingSenderId: "606377367576",
+  appId: "1:606377367576:web:6239a0dc0ad071a4bc4b6d",
 });
 
 const messaging = firebase.messaging();

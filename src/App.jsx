@@ -1,18 +1,21 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import AdminDashboard from './pages/Admin/AdminDashboard';
-import UserDashboard from './pages/User/UserDashboard';
-import ProjectList from './pages/ProjectList';
-import ProjectBoards from './pages/ProjectBoards';
-import ProjectSettings from './pages/ProjectSettings';
-import BoardView from './pages/BoardView';
-import TeamMembers from './pages/TeamMembers';
-import Organization from './pages/Organization';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingSpinner from './components/LoadingSpinner';
+
+// Lazy load pages for code splitting
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const AdminDashboard = lazy(() => import('./pages/Admin/AdminDashboard'));
+const UserDashboard = lazy(() => import('./pages/User/UserDashboard'));
+const ProjectList = lazy(() => import('./pages/ProjectList'));
+const ProjectBoards = lazy(() => import('./pages/ProjectBoards'));
+const ProjectSettings = lazy(() => import('./pages/ProjectSettings'));
+const BoardView = lazy(() => import('./pages/BoardView'));
+const TeamMembers = lazy(() => import('./pages/TeamMembers'));
+const Organization = lazy(() => import('./pages/Organization'));
 
 // Wrapper to handle invite token - always show Login/Register if inviteToken is present
 const AuthRoute = ({ children, user }) => {
@@ -44,15 +47,20 @@ function AppRoutes() {
   }
 
   return (
-    <Routes>
-      <Route
-        path="/login"
-        element={<AuthRoute user={user}><Login /></AuthRoute>}
-      />
-      <Route
-        path="/register"
-        element={<AuthRoute user={user}><Register /></AuthRoute>}
-      />
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    }>
+      <Routes>
+        <Route
+          path="/login"
+          element={<AuthRoute user={user}><Login /></AuthRoute>}
+        />
+        <Route
+          path="/register"
+          element={<AuthRoute user={user}><Register /></AuthRoute>}
+        />
       <Route
         path="/admin/*"
         element={
@@ -118,7 +126,8 @@ function AppRoutes() {
         }
       />
       <Route path="/" element={<Navigate to={user ? (user.role === 'admin' ? '/admin' : '/dashboard') : '/login'} replace />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }
 

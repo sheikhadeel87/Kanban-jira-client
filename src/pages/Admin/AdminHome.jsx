@@ -31,7 +31,9 @@ const AdminHome = () => {
         for (const board of boards) {
           try {
             const tasksRes = await taskAPI.getByBoard(board._id);
-            totalTasks += tasksRes.data.length;
+            const d = tasksRes.data;
+            const list = Array.isArray(d) ? d : (d?.tasks ?? []);
+            totalTasks += list.length;
           } catch (err) {
             // Board might not have tasks
           }

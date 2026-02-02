@@ -21,7 +21,8 @@ export function useProjectsWithStats() {
             for (const board of boardsList) {
               try {
                 const tasksRes = await taskAPI.getByBoard(board._id);
-                const list = tasksRes.data || [];
+                const d = tasksRes.data;
+                const list = Array.isArray(d) ? d : (d?.tasks ?? []);
                 total += list.length;
                 completed += list.filter((t) => t.status === 'completed').length;
               } catch (_) {}

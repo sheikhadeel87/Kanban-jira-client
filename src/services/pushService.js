@@ -1,5 +1,5 @@
 import admin from "../../backend/firebaseAdmin.js";
-import PushToken from "../models/pushToken.model.js";
+import PushToken from "../../../backend/models/pushToken.model.js"
 import mongoose from "mongoose";
 
 export async function sendPushToUser({

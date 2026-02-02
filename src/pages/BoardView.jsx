@@ -37,7 +37,9 @@ const BoardView = () => {
         taskAPI.getByBoard(boardId),
       ]);
       setBoard(boardRes.data);
-      setTasks(tasksRes.data);
+      // API returns { tasks, total, hasMore } when paginated
+      const taskList = tasksRes.data?.tasks ?? tasksRes.data ?? [];
+      setTasks(Array.isArray(taskList) ? taskList : []);
     } catch (error) {
       toast.error('Failed to load board');
       navigate('/dashboard');

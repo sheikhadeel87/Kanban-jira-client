@@ -8,7 +8,7 @@ The application follows a hierarchical organization-based structure:
 
 ```
 Organization
-  └── Users (Owner, Admin, Member)
+  └── Users (Owner, Admin, Member, Manager)
       └── Projects
           └── Boards
               └── Tasks

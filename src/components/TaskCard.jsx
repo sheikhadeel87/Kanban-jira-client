@@ -18,21 +18,8 @@ const TaskCard = ({ task, onEdit, onDelete }) => {
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
-
-  // const getStatusColor = (status) => {
-  //   switch (status) {
-  //     case 'todo':
-  //       return 'border-gray-300 bg-white';
-  //     case 'in_progress':
-  //       return 'border-blue-300 bg-blue-50';
-  //     case 'completed':
-  //       return 'border-green-300 bg-green-50';
-  //     default:
-  //       return 'border-gray-300 bg-white';
-  //   }
-  // };
-
-  // Close dropdown when clicking outside
+  
+// Close dropdown when clicking outside
   
   useEffect(() => {
     const handleClickOutside = (event) => {
