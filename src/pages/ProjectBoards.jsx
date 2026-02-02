@@ -177,7 +177,10 @@ const ProjectBoards = () => {
           taskAPI.getByBoard(board._id).catch(() => ({ data: [] }))
         );
         const allTasksResults = await Promise.all(allTasksPromises);
-        const allTasks = allTasksResults.flatMap(res => res.data || []);
+        const allTasks = allTasksResults.flatMap(res => {
+          const d = res.data;
+          return Array.isArray(d) ? d : (d?.tasks ?? []);
+        });
         setTasks(allTasks);
       } else {
         setTasks([]);

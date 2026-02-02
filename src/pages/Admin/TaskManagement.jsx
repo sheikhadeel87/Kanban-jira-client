@@ -33,7 +33,9 @@ const TaskManagement = () => {
       for (const board of boardsRes.data) {
         try {
           const tasksRes = await taskAPI.getByBoard(board._id);
-          allTasks.push(...tasksRes.data.map((task) => ({ ...task, boardTitle: board.title })));
+          const d = tasksRes.data;
+          const list = Array.isArray(d) ? d : (d?.tasks ?? []);
+          allTasks.push(...list.map((task) => ({ ...task, boardTitle: board.title })));
         } catch (err) {
           // Board might not have tasks
         }
